@@ -1,0 +1,29 @@
+spring:
+  servlet:
+    multipart:
+      # 单个文件的最大大小
+      max-file-size: 100MB
+      # 单次请求（可能包含多个文件）的最大总大小
+      max-request-size: 500MB
+  data:
+    redis:
+      host: 127.0.0.1          # Redis 服务器地址
+      port: 6379               # Redis 端口（默认6379）
+      password: ""             # 密码（本地无密码则留空）
+      database: 0              # 数据库编号（0-15）
+
+  datasource:
+    url: jdbc:mysql://localhost:3306/musicplatform?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai
+    username: root
+    password: root
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+  application:
+    name: musicplatform
+
+
+logging:
+  level:
+    org.springframework.security: DEBUG
