@@ -11,6 +11,7 @@ public class PostCommentResponse {
     private Long likeCount;//converter
     private String content;//converter
     private Long userId;//converter
+    private String userName;
     private String userAvatar="/default/defaultUserAvatar.png";
     private String createTime;//converter
     private Long countOfChildren;

@@ -123,6 +123,7 @@ public class PostCommentServiceImpl implements PostCommentService {
         Page<PostComment> postComments = postCommentRepository.findByPostIdAndParentIdAndIsDelete(postId,0L,pageable,false);
         return postComments.map(postComment -> {
             PostCommentResponse cmp = postCommentConverter.toDTO(postComment);
+            cmp.setUserName(userRepository.findById(postComment.getUserId()).orElseThrow(()->new RuntimeException("意料之外的错误,找不到用户")).getUsername());
             cmp.setCountOfChildren(postCommentRepository.countByParentIdAndIsDelete(cmp.getId(),false));
             userRepository.findById(postComment.getUserId()).ifPresent(user -> cmp.setUserAvatar(user.getAvatarUrl()));
             return cmp;
@@ -138,8 +139,11 @@ public class PostCommentServiceImpl implements PostCommentService {
         Page<PostComment> commentChildren = postCommentRepository.findByParentIdAndIsDelete(parentId,pageable,false);
         return commentChildren.map(postComment -> {
             PostCommentResponse cmp = postCommentConverter.toDTO(postComment);
-            userRepository.findById(postComment.getUserId()).ifPresent(user -> cmp.setReplyToUserName(user.getUsername()));
-            userRepository.findById(postComment.getUserId()).ifPresent(user -> cmp.setUserAvatar(user.getAvatarUrl()));
+            userRepository.findById(postComment.getReplyToUserId()).ifPresent(user -> cmp.setReplyToUserName(user.getUsername()));
+            userRepository.findById(postComment.getUserId()).ifPresent(user -> {
+                cmp.setUserAvatar(user.getAvatarUrl());
+                cmp.setUserName(user.getUsername());
+            });
             return cmp;
         });
     }

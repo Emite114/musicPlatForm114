@@ -100,10 +100,13 @@ public class SongCommentServiceImpl implements SongCommentService {
 
         Page<SongComment> songComments = songCommentRepository.findBySongIdAndParentIdAndIsDelete(songId, 0L, pageable, false);
         return songComments.map(songComment -> {
-            SongCommentResponse cmp = songCommentConverter.toResponse(songComment);
-            cmp.setCountOfChildren(songCommentRepository.countByParentIdAndIsDelete(cmp.getId(), false));
-            userRepository.findById(songComment.getUserId()).ifPresent(user -> cmp.setUserAvatar(user.getAvatarUrl()));
-            return cmp;
+            SongCommentResponse sc = songCommentConverter.toResponse(songComment);
+            sc.setCountOfChildren(songCommentRepository.countByParentIdAndIsDelete(sc.getId(), false));
+            userRepository.findById(songComment.getUserId()).ifPresent(user -> {
+                sc.setUserAvatar(user.getAvatarUrl());
+                sc.setUserName(user.getUsername());
+            });
+            return sc;
         });
     }
 
@@ -116,8 +119,11 @@ public class SongCommentServiceImpl implements SongCommentService {
         Page<SongComment> commentChildren = songCommentRepository.findByParentIdAndIsDelete(parentId,pageable,false);
         return commentChildren.map(songComment -> {
             SongCommentResponse cmp = songCommentConverter.toResponse(songComment);
-            userRepository.findById(songComment.getUserId()).ifPresent(user -> cmp.setReplyToUserName(user.getUsername()));
-            userRepository.findById(songComment.getUserId()).ifPresent(user -> cmp.setUserAvatar(user.getAvatarUrl()));
+            userRepository.findById(songComment.getReplyToUserId()).ifPresent(user -> cmp.setReplyToUserName(user.getUsername()));
+            userRepository.findById(songComment.getUserId()).ifPresent(user -> {
+                    cmp.setUserAvatar(user.getAvatarUrl());
+                    cmp.setUserName(user.getUsername());
+            });
             return cmp;
         });
     }

@@ -202,6 +202,7 @@ public class UserServiceImpl implements UserService {
     Page<UserSimpleDTO> UserPageTODTO(Page<User> userPage) {
         return userPage.map(user->{
             UserSimpleDTO dto = userConverter.userToUserSimpleDTO(user);
+            dto.setId(user.getId());
             dto.setPostCount(postRepository.countByUserId(user.getId()));
             dto.setIfIsFollowed(true);
             if (user.getAvatarUrl()!=null) {
