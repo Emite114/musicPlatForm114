@@ -18,7 +18,7 @@ import java.util.concurrent.TimeUnit;
 public class SseEmitterManager {
     @Autowired
     ReportService reportService;
-
+    private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
     private final Map<Long, SseEmitter> userEmitters = new ConcurrentHashMap<>();
     private final Map<Long, SseEmitter> adminEmitters = new ConcurrentHashMap<>();
 
@@ -30,12 +30,16 @@ public class SseEmitterManager {
         sseEmitter.onTimeout(() -> userEmitters.remove(userId));
         sseEmitter.onError((e) -> userEmitters.remove(userId));
 
-        try {
-            sseEmitter.send(SseEmitter.event().name("connected").data("连接成功,当前时间:"+ LocalDateTime.now()));
-        }catch (Exception e){
-            sseEmitter.completeWithError(e);
-        }
-        //todo心跳应该由前端发送
+        // 延迟 3 秒发送
+        scheduler.schedule(() -> {
+            try {
+                sseEmitter.send(SseEmitter.event()
+                        .name("connected")
+                        .data("连接成功，当前时间: " + LocalDateTime.now()));
+            } catch (Exception e) {
+                sseEmitter.completeWithError(e);
+            }
+        }, 3, TimeUnit.SECONDS);
 
         return sseEmitter;
     }

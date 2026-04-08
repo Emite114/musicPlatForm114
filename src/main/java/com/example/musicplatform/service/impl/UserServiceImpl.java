@@ -163,9 +163,9 @@ public class UserServiceImpl implements UserService {
         Long currentUserId = SecurityUtils.getCurrentUserId();
         return userPage.map(user -> {
             UserSimpleDTO dto = new UserSimpleDTO();
-            dto.setUserId(user.getId());
+            dto.setId(user.getId());
             dto.setUsername(user.getUsername());
-            if (!user.getAvatarUrl().isEmpty()) {
+            if (user.getAvatarUrl()!=null) {
             dto.setAvatarUrl(user.getAvatarUrl());}
             dto.setPostCount(postRepository.countByUserId(user.getId()));
             dto.setFanCount(user.getFanCount());

@@ -196,7 +196,7 @@ public class MessageServiceImpl implements MessageService {
         if(conversation.getUser1Id().equals(currentUserId)){
             conversation.setUnreadCount1(0L);
         }
-        if(conversation.getUser2Id().equals(currentUserId)){
+        else if(conversation.getUser2Id().equals(currentUserId)){
             conversation.setUnreadCount2(0L);
         }
         else throw new RuntimeException("意外的错误,该用户不属于该对话");
