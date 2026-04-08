@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.transaction.annotation.Transactional;
 
 
 public interface SongRepository extends JpaRepository<Song, Long> {
@@ -20,8 +21,29 @@ public interface SongRepository extends JpaRepository<Song, Long> {
     SELECT s FROM Song s
     WHERE (:keyword IS NULL OR 
            s.songName LIKE %:keyword% OR 
-           s.songArtist LIKE %:keyword%)
+           s.songArtist LIKE %:keyword% AND 
+           s.isDelete = false)
     ORDER BY s.createdAt DESC
 """)
     Page<Song> search(@Param("keyword") String keyword, Pageable pageable);
+
+    @Transactional
+    @Modifying
+    @Query("UPDATE Song s SET s.commentCount = s.commentCount + 1 WHERE s.id = :songId")
+    void increaseCommentCountBySongId(@Param("songId") Long songId);
+
+    @Transactional
+    @Modifying
+    @Query("UPDATE Song s SET s.commentCount = s.commentCount - 1 WHERE s.id = :songId")
+    void decreaseCommentCountBySongId(@Param("songId") Long songId);
+
+    @Transactional
+    @Modifying
+    @Query("UPDATE Song s SET s.favouriteCount = s.favouriteCount + 1 WHERE s.id = :songId")
+    void increaseFavouriteCountBySongId(@Param("songId") Long songId);
+
+    @Transactional
+    @Modifying
+    @Query("UPDATE Song s SET s.favouriteCount = s.favouriteCount - 1 WHERE s.id = :songId")
+    void decreaseFavouriteCountBySongId(@Param("songId") Long songId);
 }

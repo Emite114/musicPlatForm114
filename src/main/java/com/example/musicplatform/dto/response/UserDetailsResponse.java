@@ -16,7 +16,8 @@ public class UserDetailsResponse {
         this.username = user.getUsername();
         this.email = user.getEmail();
         if (user.getAvatarUrl()!=null){
-        this.avatarUrl = user.getAvatarUrl();}
+        this.avatarUrl = user.getAvatarUrl();
+        }
         this.gender = user.getGender();
         this.registerDate = user.getRegisterTime();
     }

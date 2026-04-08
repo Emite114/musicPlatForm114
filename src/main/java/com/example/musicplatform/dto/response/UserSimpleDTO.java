@@ -4,8 +4,10 @@ import lombok.Data;
 
 @Data
 public class UserSimpleDTO {
-    private Long userId;
-    private String username;
+    private Long userId;//converter
+    private String username;//converter
     private String avatarUrl="/default/defaultUserAvatar.png";
     private int postCount;
+    private Long fanCount;
+    private boolean ifIsFollowed;
 }

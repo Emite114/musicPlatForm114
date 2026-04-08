@@ -16,9 +16,9 @@ public class UserLikePostComment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Column(name = "post_comment_id", nullable = false,unique = true)
+    @Column(name = "post_comment_id", nullable = false)
     private Long postCommentId;
-    @Column(name="userid",nullable = false,unique = true)
+    @Column(name="userid",nullable = false)
     private Long userId;
     @Column(name = "create_time",nullable = false)
     private LocalDateTime createTime;

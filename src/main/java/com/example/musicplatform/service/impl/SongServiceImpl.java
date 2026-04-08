@@ -1,20 +1,25 @@
 package com.example.musicplatform.service.impl;
 
-import com.example.musicplatform.dto.request.UploadSongRequest;
+
+import com.example.musicplatform.converters.SongConverter;
+import com.example.musicplatform.dto.request.SongUploadRequest;
 import com.example.musicplatform.dto.response.SongDetailsResponse;
 import com.example.musicplatform.dto.response.SongSimpleDTO;
-import com.example.musicplatform.entity.Song;
-import com.example.musicplatform.repository.SongRepository;
+import com.example.musicplatform.entity.*;
+import com.example.musicplatform.repository.*;
 import com.example.musicplatform.service.SongService;
+import com.example.musicplatform.service.redisService.RedisConnectionChecker;
+import com.example.musicplatform.service.redisService.SongStatsService;
+import com.example.musicplatform.util.LogUtil;
 import com.example.musicplatform.util.SecurityUtils;
-
 import jakarta.transaction.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-
 import java.time.LocalDateTime;
 import java.util.Optional;
 
@@ -22,10 +27,28 @@ import java.util.Optional;
 public class SongServiceImpl implements SongService {
     @Autowired
     private SongRepository songRepository;
+    @Autowired
+    private UserFavouriteSongRepository userFavouriteSongRepository;
+    @Autowired
+    private SongConverter songConverter;
+    @Autowired
+    private RedisConnectionChecker redisConnectionChecker;
+    @Autowired
+    private SongStatsService songStatsService;
 
+
+    protected Page<SongSimpleDTO> entityPageToDTOPage(Page<Song> songPage) {
+        return songPage.map(song -> {
+            SongSimpleDTO dto = songConverter.toDto(song);
+            if (song.getAvatarUrl() != null) {
+                dto.setAvatarUrl(song.getAvatarUrl());
+            }
+            return dto;
+        });
+    }
     @Transactional
     @Override
-    public void uploadSong(UploadSongRequest songRequest) {
+    public void uploadSong(SongUploadRequest songRequest) {
         Song song = new Song();
         if (songRequest.getSongName() == null){
             throw new RuntimeException("歌曲名不能为空");
@@ -72,8 +95,20 @@ public class SongServiceImpl implements SongService {
     public SongDetailsResponse getSongDetails(Long id) {
         Optional<Song> optional = songRepository.findById(id);
         Song song = optional.orElseThrow(()->new RuntimeException("找不到歌曲"));
+        if(song.getIsDelete()){
+            throw new RuntimeException("该歌曲已被封禁");
+        }
+        SongDetailsResponse details = songConverter.toDetailsResponse(song);
+        if(song.getAvatarUrl()!=null){
+            details.setAvatarUrl(song.getAvatarUrl());
+        }
+        if(redisConnectionChecker.isRedisConnected()){
+            songStatsService.increaseSongPlayCount(song.getId());
+            return details;
+        }
+        LogUtil.redisFailLog();
         song.setPlayCount(song.getPlayCount()+1);
-        return new  SongDetailsResponse(song);
+        return details;
     }
 
 
@@ -84,6 +119,54 @@ public class SongServiceImpl implements SongService {
         }
         Pageable pageable = PageRequest.of(page, pageSize);
         Page<Song> songPage=songRepository.search(keyword, pageable);
-        return songPage.map(SongSimpleDTO::new);
+        return entityPageToDTOPage(songPage);
     }
+
+    @Transactional
+    @Override
+    public boolean toggleFavourite(Long songId) {
+        Long userId = SecurityUtils.getCurrentUserId();
+        if(songRepository.findById(songId).isEmpty()) {
+            throw new RuntimeException("找不到该歌曲");
+        }
+        //没有就收藏
+        if(userFavouriteSongRepository.findBySongIdAndUserId(songId,userId).isEmpty()){
+            UserFavouriteSong userFavouriteSong = new UserFavouriteSong();
+            userFavouriteSong.setSongId(songId);
+            userFavouriteSong.setUserId(userId);
+            userFavouriteSong.setCreateDate(LocalDateTime.now());
+            userFavouriteSongRepository.save(userFavouriteSong);
+            if (redisConnectionChecker.isRedisConnected()) {
+                songStatsService.increaseSongFavouriteCount(songId);
+                return false;
+            }
+            LogUtil.redisFailLog();
+            songRepository.increaseFavouriteCountBySongId(songId);
+            return false;
+        }
+        //有就删
+        if (userFavouriteSongRepository.findBySongIdAndUserId(songId,userId).isPresent()){
+            userFavouriteSongRepository.deleteBySongIdAndUserId(songId,userId);
+            if (redisConnectionChecker.isRedisConnected()) {
+                songStatsService.decreaseSongFavouriteCount(songId);
+                return true;
+            }
+            LogUtil.redisFailLog();
+            songRepository.decreaseFavouriteCountBySongId(songId);
+            return true;
+        }
+        throw new RuntimeException();
+    }
+
+    @Override
+    public Page<SongSimpleDTO> getUserOwnFavouriteSongs(String keyword, int page, int size) {
+        if (keyword == null || keyword.trim().isEmpty()) {
+            keyword = "";
+        }
+        Pageable pageable = PageRequest.of(page, size);
+        Long userId = SecurityUtils.getCurrentUserId();
+        Page<Song> pageSong = userFavouriteSongRepository.searchUserFavouriteSongByKeyword(userId, keyword, pageable);
+        return entityPageToDTOPage(pageSong);
+    }
+
 }

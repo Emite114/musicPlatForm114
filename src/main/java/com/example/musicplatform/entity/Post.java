@@ -41,9 +41,16 @@ public class Post {
     @Column(name = "status", nullable = false, columnDefinition = "tinyint NOT NULL DEFAULT 1 comment '状态：1-正常，0-删除'")
     private Integer status = 1; // 默认状态为1
 //todo:redis统计数据延迟落盘
+    @Column(name = "view_count")
+    private Long viewCount = 0L;
     @Column(name = "like_count",nullable = false)
-    private Long likeCount;
+    private Long likeCount = 0L;
     @Column(name = "comment_count")
-    private Long commentCount;
+    private Long commentCount = 0L;
+    @Column(name = "favourite_count")
+    private Long favouriteCount = 0L;
+    @Column(name="hot_score")
+    private double hotScore = 0.0;
+
 
 }

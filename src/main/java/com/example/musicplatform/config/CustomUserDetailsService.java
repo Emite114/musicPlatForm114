@@ -53,12 +53,6 @@ public class CustomUserDetailsService implements UserDetailsService {
                 .map(SimpleGrantedAuthority::new)
                 .collect(Collectors.toList());
 
-//        return new org.springframework.security.core.userdetails.User(
-//                user.getUsername(),
-//                user.getPassword(),
-//                authorities
-//        );
-        //用自己的userdetail
         return new CustomUserDetails(
                 user.getUsername(),
                 user.getPassword(),

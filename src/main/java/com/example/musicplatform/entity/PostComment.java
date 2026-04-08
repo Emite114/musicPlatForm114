@@ -35,13 +35,4 @@ public class PostComment {
     @Column(name ="is_delete")
     private Boolean isDelete=false;
 
-    //构造函数写成方法 提升代码可读性,请求(request)最好带有动作
-    public PostComment newInstance(PostCommentCreateRequest request){
-        PostComment postComment = new PostComment();
-        postComment.setPostId(request.getPostId());
-        postComment.setContent(request.getContent());
-        postComment.setParentId(request.getParentId());
-        postComment.setCreateTime(LocalDateTime.now());
-        return postComment;
-    }
 }

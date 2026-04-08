@@ -1,14 +1,16 @@
 package com.example.musicplatform.service.impl;
 
+import com.example.musicplatform.config.CustomUserDetails;
+import com.example.musicplatform.converters.UserConverter;
+import com.example.musicplatform.dto.request.LoginRequest;
+import com.example.musicplatform.dto.response.OnesUserDetail;
 import com.example.musicplatform.dto.response.UserDetailsResponse;
 import com.example.musicplatform.dto.response.UserSimpleDTO;
+import com.example.musicplatform.entity.Follow;
 import com.example.musicplatform.entity.Role;
 import com.example.musicplatform.entity.User;
 import com.example.musicplatform.entity.UserRole;
-import com.example.musicplatform.repository.PostRepository;
-import com.example.musicplatform.repository.RoleRepository;
-import com.example.musicplatform.repository.UserRepository;
-import com.example.musicplatform.repository.UserRoleRepository;
+import com.example.musicplatform.repository.*;
 import com.example.musicplatform.service.UserService;
 import com.example.musicplatform.util.JwtUtil;
 import com.example.musicplatform.util.NumberChecker;
@@ -20,9 +22,14 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 
+import java.time.LocalDateTime;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -35,6 +42,14 @@ public class UserServiceImpl implements UserService {
     UserRoleRepository userRoleRepository;
     @Autowired
     private PostRepository postRepository;
+    @Autowired
+    private FollowRepository followRepository;
+    @Autowired
+    private UserConverter userConverter;
+    @Autowired
+    private JwtUtil jwtUtil;
+    @Autowired
+    private AuthenticationManager authenticationManager;
 
     //密码加密器
 //    org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder encoder =
@@ -52,13 +67,13 @@ public class UserServiceImpl implements UserService {
         if (ObjectUtils.isEmpty(user.getPassword())) throw new IllegalArgumentException("密码不能为空");
         if (ObjectUtils.isEmpty(user.getUsername())) throw new IllegalArgumentException("用户名不能为空");
 
-        if (userRepository.findByEmail(user.getEmail()) != null) {
+        if (userRepository.findByEmail(user.getEmail()).isPresent()) {
             throw new IllegalArgumentException("邮箱已使用");
         }
         if (!isValidEmailCommons(user.getEmail())) {
             throw new IllegalArgumentException("邮箱格式不正确");
         }
-        if (userRepository.findByUsername(user.getUsername()) != null) {
+        if (userRepository.findByUsername(user.getUsername()).isPresent()) {
             throw new IllegalArgumentException("用户名重复");
         }
         if (EmailValidator.getInstance().isValid(user.getUsername())){
@@ -94,6 +109,25 @@ public class UserServiceImpl implements UserService {
 
 
     @Override
+    public String login(LoginRequest loginRequest) {
+        UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                loginRequest.getAccount(), loginRequest.getPassword());
+        Authentication authentication = authenticationManager.authenticate(authToken);
+        CustomUserDetails userPrincipal = (CustomUserDetails) authentication.getPrincipal();
+
+        if (userPrincipal == null) {
+            throw new RuntimeException("意外的错误,用户未登录");
+        }
+        Long userId  = userPrincipal.getUserId();
+        if (!Objects.requireNonNull(userRepository.findById(userId).orElse(null)).getIsActive()) {
+            throw new RuntimeException("用户已被封禁,联系管理员解封");
+        }
+        return jwtUtil.generateToken(
+                userPrincipal.getUserId(),
+                userPrincipal.getUsername());
+    }
+
+    @Override
     @Transactional
     public void updateUserAvatar(String avatarUrl) {
         Long userId =  SecurityUtils.getCurrentUserId();
@@ -126,7 +160,7 @@ public class UserServiceImpl implements UserService {
         Pageable pageable = PageRequest.of(page, pageSize);
 
         Page<User> userPage = userRepository.search(keyword, pageable);
-
+        Long currentUserId = SecurityUtils.getCurrentUserId();
         return userPage.map(user -> {
             UserSimpleDTO dto = new UserSimpleDTO();
             dto.setUserId(user.getId());
@@ -134,8 +168,73 @@ public class UserServiceImpl implements UserService {
             if (!user.getAvatarUrl().isEmpty()) {
             dto.setAvatarUrl(user.getAvatarUrl());}
             dto.setPostCount(postRepository.countByUserId(user.getId()));
+            dto.setFanCount(user.getFanCount());
+            dto.setIfIsFollowed(followRepository.findByUserIdAndFollowUserId(currentUserId, user.getId()).isPresent());
             return dto;
         });
+    }
 
+    @Transactional
+    @Override
+    public boolean toggleFollow(Long followUserId) {
+        if(userRepository.findById(followUserId).isEmpty()) throw new RuntimeException("找不到要关注的用户");
+        Long userId = SecurityUtils.getCurrentUserId();
+        if(Objects.equals(userId, followUserId))throw new RuntimeException("不能关注自己");
+        if(followRepository.findByUserIdAndFollowUserId(userId, followUserId).isEmpty()) {
+            Follow follow = new Follow();
+            follow.setUserId(userId);
+            follow.setFollowUserId(followUserId);
+            follow.setCreateDate(LocalDateTime.now());
+            followRepository.save(follow);
+            userRepository.increaseFollowCountByUserId(userId);
+            userRepository.increaseFanCountByUserId(followUserId);
+            return false;
+        }
+        if(followRepository.findByUserIdAndFollowUserId(userId, followUserId).isPresent()) {
+            followRepository.delete(followRepository.findByUserIdAndFollowUserId(userId, followUserId).get());
+            userRepository.decreaseFollowCountByUserId(userId);
+            userRepository.decreaseFanCountByUserId(followUserId);
+            return true;
+        }
+        else throw new RuntimeException("意外的错误 ");
+    }
+
+    Page<UserSimpleDTO> UserPageTODTO(Page<User> userPage) {
+        return userPage.map(user->{
+            UserSimpleDTO dto = userConverter.userToUserSimpleDTO(user);
+            dto.setPostCount(postRepository.countByUserId(user.getId()));
+            dto.setIfIsFollowed(true);
+            if (user.getAvatarUrl()!=null) {
+                dto.setAvatarUrl(user.getAvatarUrl());
+            }
+            return dto;
+        });
+    }
+
+
+    @Override
+    public Page<UserSimpleDTO> getOwnFollowList(int page, int pageSize) {
+        Pageable pageable = PageRequest.of(page, pageSize);
+        Long  currentUserId = SecurityUtils.getCurrentUserId();
+        Page<User> userPage = userRepository.findFollows(currentUserId, pageable);
+        return UserPageTODTO(userPage);
+    }
+
+    @Override
+    public Page<UserSimpleDTO> getOwnFanList(int page, int pageSize) {
+        Pageable pageable = PageRequest.of(page, pageSize);
+        Long currentUserId = SecurityUtils.getCurrentUserId();
+        Page<User> userPage = userRepository.findFans(currentUserId, pageable);
+        return UserPageTODTO(userPage);
+    }
+
+    @Override
+    public OnesUserDetail getOnesUserDetail(Long id) {
+        User user = userRepository.findById(id).orElseThrow(()->new RuntimeException("找不到用户"));
+        OnesUserDetail detail = userConverter.userToOnesUserDetail(user);
+        if (user.getAvatarUrl()!=null) {
+            detail.setAvatarUrl(user.getAvatarUrl());
+        }
+        return detail;
     }
 }

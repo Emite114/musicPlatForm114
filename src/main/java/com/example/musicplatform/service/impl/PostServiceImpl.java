@@ -6,11 +6,18 @@ import com.example.musicplatform.dto.response.PostSimpleDTO;
 import com.example.musicplatform.entity.*;
 import com.example.musicplatform.repository.*;
 import com.example.musicplatform.service.PostService;
+import com.example.musicplatform.service.redisService.PostStatsService;
+import com.example.musicplatform.service.redisService.RedisConnectionChecker;
+import com.example.musicplatform.util.LogUtil;
+import com.example.musicplatform.util.PageableUtil;
 import com.example.musicplatform.util.SecurityUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -32,6 +39,43 @@ public class PostServiceImpl implements PostService {
     private UserRepository userRepository;
     @Autowired
     private UserLikePostRepository userLikePostRepository;
+    @Autowired
+    private UserFavouritePostRepository userFavouritePostRepository;
+    @Autowired
+    private FollowRepository followRepository;
+    @Autowired
+    private RedisConnectionChecker redisConnectionChecker;
+    @Autowired
+    private PostStatsService postStatsService;
+
+
+
+    protected Page<PostSimpleDTO> entityPageToDTOPage(Page<Post> postPage) {
+        return postPage.map(post -> {
+            PostSimpleDTO dto = new PostSimpleDTO();
+            dto.setId(post.getId());
+            dto.setTitle(post.getTitle());
+            dto.setContent(post.getContent());
+            dto.setLikeCount(post.getLikeCount());
+            dto.setUserId(post.getUserId());
+            dto.setUsername(
+                    userRepository.findById(post.getUserId())
+                    .map(User::getUsername)
+                    .orElse("未知用户")
+            );
+
+            List<PostMedia> relations = postMediaRepository.findAllByPostId(post.getId());
+            for (PostMedia pm : relations) {
+                Media media = mediaRepository.findById(pm.getMediaId()).orElse(null);
+                if (media != null && media.getMediaType() == Media.MediaType.image) {
+                    dto.setCoverUrl("/media/" + media.getUrl());
+                    break;
+                }
+            }
+
+            return dto;
+        });
+    }
 
     @Override
     public void createPost(PostCreateRequest request) {
@@ -48,7 +92,7 @@ public class PostServiceImpl implements PostService {
             Media media = mediaRepository.findById(mediaId)
                     .orElseThrow(() -> new RuntimeException("资源不存在"));
 
-            // 校验是不是当前用户的资源
+            // 资源校验,没必要
 //            if (!media.getUserId().equals(SecurityUtils.getCurrentUserId())) {
 //                throw new RuntimeException("不能使用他人的资源");
 //            }
@@ -65,10 +109,16 @@ public class PostServiceImpl implements PostService {
 
     }
 
+    @Transactional
     public PostDetailResponse getPostById(@PathVariable Long id) {
         Optional<Post> optional = postRepository.findById(id);
         Post post = optional.orElseThrow(() -> new RuntimeException("文章不存在"));
+        if(post.getStatus()==0){
+            throw new RuntimeException("帖子已被封禁");
+        }
         PostDetailResponse postDetailResponse = new PostDetailResponse(post);
+        Long currentUserId = SecurityUtils.getCurrentUserId();
+        postDetailResponse.setIfIsFollowed(followRepository.findByUserIdAndFollowUserId(currentUserId, post.getUserId()).isPresent());
         Optional<User> optionalUser = userRepository.findById(post.getUserId());
         User user = optionalUser.orElse(null);
         if (user == null) {
@@ -90,34 +140,25 @@ public class PostServiceImpl implements PostService {
         }
         postDetailResponse.setMediaUrlList(mediaUrlList);
         }
-
+        //浏览量
+        if(redisConnectionChecker.isRedisConnected()){
+            postStatsService.increasePostViewCount(post.getId());
+        }else {
+            LogUtil.redisFailLog();
+            postRepository.increaseViewCountByPostId(post.getId());
+        }
         return postDetailResponse;
     }
 
     //模糊查找帖子
     @Override
-    public Page<PostSimpleDTO> page(String keyword, int page, int size) {
+    public Page<PostSimpleDTO> page(String keyword, int page, int size,String sort) {
         if (keyword == null || keyword.length() < 2) {
             throw new RuntimeException("关键词至少2个字符");
         }
-        Pageable pageable = PageRequest.of(page, size);
+        Pageable pageable = PageableUtil.initializePageable(page, size, sort);
         Page<Post> postPage = postRepository.search(keyword, pageable);
-        return postPage.map(post -> {
-            PostSimpleDTO dto = new PostSimpleDTO();
-            dto.setId(post.getId());
-            dto.setTitle(post.getTitle());
-            dto.setContent(post.getContent());
-            List<PostMedia> relations = postMediaRepository.findAllByPostId(post.getId());
-            for (PostMedia pm : relations) {
-                Media media = mediaRepository.findById(pm.getMediaId()).orElse(null);
-                if (media != null && media.getMediaType() == Media.MediaType.image) {
-                    dto.setCoverUrl("/media/" + media.getUrl());
-                    break;
-                }
-            }
-
-            return dto;
-        });
+        return entityPageToDTOPage(postPage);
     }
 
     //查询用户所有帖子
@@ -132,17 +173,10 @@ public class PostServiceImpl implements PostService {
         Page<Post> postPage = postRepository.findByUserId(user.getId(), pageable);
 
         // 3️⃣ 转 DTO
-        return postPage.map(post -> {
-            PostSimpleDTO dto = new PostSimpleDTO();
-            dto.setId(post.getId());
-            dto.setTitle(post.getTitle());
-            dto.setContent(post.getContent());
-            return dto;
-        });
+        return entityPageToDTOPage(postPage);
     }
     @Transactional
-    public void toggleLike(Long postId) {
-
+    public boolean toggleLike(Long postId) {
         Long userId = SecurityUtils.getCurrentUserId();
 
         // 1️⃣ 判断是否已点赞
@@ -152,8 +186,13 @@ public class PostServiceImpl implements PostService {
         if (existing.isPresent()) {
             // 已点赞 → 取消点赞
             userLikePostRepository.delete(existing.get());
-
-            postRepository.decrementLikeCountByPostId(postId);
+            if (redisConnectionChecker.isRedisConnected()) {
+                postStatsService.decreasePostLikeCount(postId);
+                return  true;
+            }
+            LogUtil.redisFailLog();
+            postRepository.decreaseLikeCountByPostId(postId);
+            return  true;
 
         } else {
             //  未点赞 → 点赞
@@ -161,10 +200,58 @@ public class PostServiceImpl implements PostService {
             like.setPostId(postId);
             like.setUserId(userId);
             like.setCreateTime(LocalDateTime.now());
-
             userLikePostRepository.save(like);
-
-            postRepository.incrementLikeCountByPostId(postId);
+            if(redisConnectionChecker.isRedisConnected()){
+                postStatsService.increasePostLikeCount(postId);
+            return false;
+            }
+            LogUtil.redisFailLog();
+            postRepository.increaseLikeCountByPostId(postId);
+            return false;
         }
+    }
+    @Transactional
+    public boolean toggleFavourite(Long postId) {
+        Long userId = SecurityUtils.getCurrentUserId();
+        if(postRepository.findById(postId).isEmpty()) {
+            throw new RuntimeException("找不到该文章");
+        }
+        //找不到->点赞
+        if(userFavouritePostRepository.findByPostIdAndUserId(postId,userId).isEmpty()){
+            UserFavouritePost userFavouritePost = new UserFavouritePost();
+            userFavouritePost.setPostId(postId);
+            userFavouritePost.setUserId(userId);
+            userFavouritePost.setCreateDate(LocalDateTime.now());
+            userFavouritePostRepository.save(userFavouritePost);
+            if(redisConnectionChecker.isRedisConnected()){
+                postStatsService.increasePostFavouriteCount(postId);
+                return false;
+            }
+            LogUtil.redisFailLog();
+            postRepository.increaseFavouriteCountByPostId(postId);
+            return false;
+        }
+        if (userFavouritePostRepository.findByPostIdAndUserId(postId,userId).isPresent()){
+            userFavouritePostRepository.deleteByPostIdAndUserId(postId,userId);
+            if(redisConnectionChecker.isRedisConnected()){
+                postStatsService.decreasePostFavouriteCount(postId);
+                return true;
+            }
+            LogUtil.redisFailLog();
+            postRepository.decreaseFavouriteCountByPostId(postId);
+            return true;
+        }
+        throw new RuntimeException("意外的错误");
+    }
+    public Page<PostSimpleDTO> getUserOwnFavouritePosts(String keyword, int page, int size) {
+        if (keyword == null || keyword.trim().isEmpty()) {
+            keyword = "";
+        }
+        Pageable pageable = PageRequest.of(page, size);
+        Long userId = SecurityUtils.getCurrentUserId();
+
+
+        Page<Post> pagePost = userFavouritePostRepository.searchUserFavouritePostByKeyword(userId, keyword, pageable);
+        return entityPageToDTOPage(pagePost);
     }
 }

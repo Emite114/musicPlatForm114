@@ -69,7 +69,13 @@ public class User {
      */
     @Column(name = "gender")
     @Enumerated(EnumType.STRING)  // 存储枚举的字符串值（而非默认的索引）
-    private GenderEnum gender;
+    private GenderEnum gender= GenderEnum.unknown;
+
+    @Column(name = "fan_count")
+    private Long fanCount=0L;
+
+    @Column(name = "follow_count")
+    private Long followCount=0L;
 
     /**
      * 是否激活（0-未激活，1-已激活）

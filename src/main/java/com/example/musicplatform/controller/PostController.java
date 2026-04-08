@@ -29,16 +29,42 @@ public class PostController {
     @PostMapping("/post/like/{id}")
     public Response<?> like(@PathVariable Long id) {
         try {
-            postService.toggleLike(id);
-            return Response.success(null, "操作成功");
+            boolean isLike = postService.toggleLike(id);
+            if(isLike) {
+            return Response.success(null, "取消点赞成功");}
+            else {return Response.success(null,"点赞成功");}
         }catch (Exception e){ return Response.error(null,e.getMessage()+"操作失败"); }
     }
     @GetMapping("/post/page")
     public Response<?> page(
             @RequestParam(required = false) String keyword,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
-        return Response.success(postService.page(keyword, page, size), "查询成功");
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "time")String sort) {
+        return Response.success(postService.page(keyword, page, size,sort), "查询成功");
+    }
+    @PostMapping("/post/favourite/{postId}")
+    public Response<?> favourite(@PathVariable Long postId) {
+        try {
+        boolean isFavourite = postService.toggleFavourite(postId);
+        if (isFavourite) {
+            return Response.success(null,"取消收藏成功");}
+        else{
+            return Response.success(null,"收藏成功");
+        }
+        }catch (Exception e){ return Response.error(null,e.getMessage()+"操作失败"); }
+    }
+    @GetMapping("post/favourite/userOwn")
+    public Response<?> getFavouritePostUserOwn(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20")int size
+    ){
+        try {
+            return Response.success(postService.getUserOwnFavouritePosts(keyword, page, size),"操作成功");
+        } catch (Exception e) {
+            return Response.error(null,e.getMessage()+"操作失败");
+        }
     }
 
 }

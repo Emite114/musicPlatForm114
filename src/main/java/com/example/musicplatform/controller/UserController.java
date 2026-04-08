@@ -47,18 +47,7 @@ public class UserController {
     @PostMapping("/user/login")
     public Response<?> login(@RequestBody LoginRequest  loginRequest) {
         try {
-            UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                    loginRequest.getAccount(), loginRequest.getPassword());
-            Authentication authentication = authenticationManager.authenticate(authToken);
-            CustomUserDetails userPrincipal = (CustomUserDetails) authentication.getPrincipal();
-
-            if (userPrincipal == null) {
-                throw new RuntimeException("用户未登录");
-            }
-            String token = jwtUtil.generateToken(
-                    userPrincipal.getUserId(),
-                    userPrincipal.getUsername());
-
+            String token = userService.login(loginRequest);
             return Response.success(token, " 登陆成功喵");
         }catch (Exception e){
             return Response.error(null,e.getMessage()+" 登录失败喵");
@@ -147,6 +136,51 @@ public class UserController {
             return Response.error(null,e.getMessage());
         }
     }
+    @PostMapping("/user/follow/{id}")
+    public Response<?> followUser(@PathVariable Long id){
+        try {
+            boolean isFollow = userService.toggleFollow(id);
+            if(isFollow) {
+            return Response.success(null,"取关成功喵");
+            }
+            else {
+                return Response.success(null, "关注成功喵");
+            }
+        }catch (Exception e){
+            return Response.error(null,e.getMessage()+" 关注失败喵");
+        }
+    }
+    @GetMapping("/user/main/getFollows")
+    public Response<?> getOwnFollowList(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size
+    ){
+        try {
+            return Response.success(userService.getOwnFollowList(page, size),"操作成功");
+        }catch (Exception e){
+            return Response.error(null,e.getMessage());
+        }
 
+    }
+    @GetMapping("/user/main/getFans")
+    public Response<?> getOwnFanList(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size
+    ){
+        try {
+            return Response.success(userService.getOwnFanList(page, size),"操作成功");
+        }
+        catch (Exception e){
+            return Response.error(null,e.getMessage());
+        }
+    }
+    @GetMapping("/user/getOneDetail/{id}")
+    public Response<?> getOneDetail(@PathVariable Long id){
+        try {
+            return Response.success(userService.getOnesUserDetail(id),"查找用户主页成功");
+        }catch (Exception e){
+            return Response.error(null,e.getMessage()+"  查找用户主页失败");
+        }
+    }
 
 }

@@ -11,5 +11,6 @@ public interface PostCommentService {
     boolean toggleLike(Long id);
     Page<PostCommentResponse> pagePostParentComments(Long postId,int page, int size,String sort);
     Page<PostCommentResponse> pagePostChildrenComments(Long parentId,int page, int size,String sort);
+    void deleteComment(Long commentId);
 
 }

@@ -32,7 +32,7 @@ public class PostCommentController {
             return Response.error(null,e.getMessage()+" 操作失败");
         }
     }
-    @GetMapping("/post/comment/getParent")
+    @GetMapping("/post/comment/getParents")
     public Response<?> getParentComments(
             @RequestParam Long postId,
             @RequestParam(defaultValue = "0") Integer page,
@@ -57,6 +57,15 @@ public class PostCommentController {
 
         }catch (Exception e){
             return Response.error(null,e.getMessage()+" 获取子评论失败");
+        }
+    }
+    @PutMapping("/post/comment/delete/{id}")
+    public Response<?> deleteComment(@PathVariable Long id){
+        try {
+            postCommentService.deleteComment(id);
+            return Response.success(null,"删除成功");
+        }catch (Exception e){
+            return Response.error(null,e.getMessage()+"删除失败");
         }
     }
 }

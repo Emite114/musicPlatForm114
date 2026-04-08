@@ -12,8 +12,14 @@ import com.example.musicplatform.repository.UserLikePostCommentRepository;
 import com.example.musicplatform.repository.UserRepository;
 import com.example.musicplatform.service.PostCommentService;
 import com.example.musicplatform.service.UserService;
+import com.example.musicplatform.service.redisService.PostStatsService;
+import com.example.musicplatform.service.redisService.RedisConnectionChecker;
+import com.example.musicplatform.util.LogUtil;
+import com.example.musicplatform.util.PageableUtil;
 import com.example.musicplatform.util.SecurityUtils;
 import jakarta.transaction.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -36,25 +42,14 @@ public class PostCommentServiceImpl implements PostCommentService {
     UserRepository userRepository;
     @Autowired
     UserLikePostCommentRepository userLikePostCommentRepository;
+    @Autowired
+    RedisConnectionChecker redisConnectionChecker;
+    @Autowired
+    PostStatsService postStatsService;
 
-    protected Pageable initializePageable(int page,int size, String sort) {
-        Pageable pageable = PageRequest.of(page, size);
-        if("like".equals(sort)||sort==null){
-            pageable = PageRequest.of(page, size, Sort.by(
-                    Sort.Order.desc("likeCount"),
-                    Sort.Order.desc("createTime")));
-        }
-        else if ("time".equals(sort)){
-            pageable=PageRequest.of(page,size,Sort.by(
-                    Sort.Order.desc("createTime"),
-                    Sort.Order.desc("likeCount")
-            ));
-        }else {
-            throw new RuntimeException("未知的排序");
-        }
-        return pageable;
-    }
 
+
+    @Transactional
     @Override
     public void createComment(PostCommentCreateRequest request) {
         if (request == null) {throw new RuntimeException("请求不能为空");}
@@ -71,6 +66,7 @@ public class PostCommentServiceImpl implements PostCommentService {
             postCommentParent.setReplyToUserId(0L);
             postCommentParent.setCreateTime(LocalDateTime.now());
             postCommentRepository.save(postCommentParent);
+            postRepository.increaseCommentCountByPostId(postCommentParent.getPostId());
         }else {
             Optional<PostComment> op = postCommentRepository.findById(request.getParentId());
             op.orElseThrow(()->new RuntimeException("找不到根评论"));
@@ -83,6 +79,12 @@ public class PostCommentServiceImpl implements PostCommentService {
             postCommentChild.setCreateTime(LocalDateTime.now());
             postCommentChild.setUserId(SecurityUtils.getCurrentUserId());
             postCommentRepository.save(postCommentChild);
+            if (redisConnectionChecker.isRedisConnected()){
+                postStatsService.increasePostCommentCount(request.getPostId());
+            }else {
+                LogUtil.redisFailLog();
+                postRepository.increaseCommentCountByPostId(postCommentChild.getPostId());
+            }
         }
 
 
@@ -115,7 +117,7 @@ public class PostCommentServiceImpl implements PostCommentService {
         if (postRepository.findById(postId).isEmpty()){
             throw new RuntimeException("找不到帖子");
         }
-        Pageable pageable = initializePageable(page, size, sort);
+        Pageable pageable = PageableUtil.initializePageable(page, size, sort);
 
 
         Page<PostComment> postComments = postCommentRepository.findByPostIdAndParentIdAndIsDelete(postId,0L,pageable,false);
@@ -132,13 +134,27 @@ public class PostCommentServiceImpl implements PostCommentService {
         if(postCommentRepository.findById(parentId).isEmpty()){
             throw new RuntimeException("找不到父评论");
         }
-        Pageable pageable = initializePageable(page, size, sort);
+        Pageable pageable = PageableUtil.initializePageable(page, size, sort);
         Page<PostComment> commentChildren = postCommentRepository.findByParentIdAndIsDelete(parentId,pageable,false);
         return commentChildren.map(postComment -> {
             PostCommentResponse cmp = postCommentConverter.toDTO(postComment);
             userRepository.findById(postComment.getUserId()).ifPresent(user -> cmp.setReplyToUserName(user.getUsername()));
             userRepository.findById(postComment.getUserId()).ifPresent(user -> cmp.setUserAvatar(user.getAvatarUrl()));
             return cmp;
+        });
+    }
+
+    @Override
+    public void deleteComment(Long commentId) {
+        PostComment postComment = postCommentRepository.findById(commentId).orElse(null);
+        if (postComment != null) {
+            if(postComment.getUserId().equals(SecurityUtils.getCurrentUserId())) {
+            postComment.setIsDelete(true);
+            }else {throw new RuntimeException("用户id不匹配");}
+        }else {throw new RuntimeException("找不到该评论");}
+        postCommentRepository.save(postComment);
+        postRepository.findById(postComment.getPostId()).ifPresent(post -> {
+            postRepository.decreaseCommentCountByPostId(post.getId());
         });
     }
 }

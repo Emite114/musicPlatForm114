@@ -37,6 +37,8 @@ public class SecurityConfig {
                 // 1. 配置哪些接口不需要登录
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/user/logout").hasRole("USER")
+                        .requestMatchers("/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/superAdmin/**").hasRole("SUPER_ADMIN")
                         .requestMatchers("/user/login", "/user/register", "/css/**", "/js/**","/index.html","/error","/default/**").permitAll()
                         .anyRequest().authenticated() // 其他所有接口都需要登录
 
