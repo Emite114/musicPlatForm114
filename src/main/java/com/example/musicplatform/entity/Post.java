@@ -30,11 +30,9 @@ public class Post {
     @Column(name = "content", columnDefinition = "text comment '帖子正文'")
     private String content;
 
-    @CreationTimestamp
     @Column(name = "create_time", nullable = false, updatable = false, columnDefinition = "datetime NOT NULL DEFAULT CURRENT_TIMESTAMP comment '发布时间'")
     private LocalDateTime createTime;
 
-    @UpdateTimestamp
     @Column(name = "update_time", nullable = false, columnDefinition = "datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '更新时间'")
     private LocalDateTime updateTime;
 

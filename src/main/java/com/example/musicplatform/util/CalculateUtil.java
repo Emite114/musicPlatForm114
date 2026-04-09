@@ -28,7 +28,7 @@ public class CalculateUtil {
 
         double baseScore = viewScore+likeRate*100*3+commentRate*100*4+favouriteRate*100*5;
 
-        long hoursOld = ChronoUnit.HOURS.between(createTime, Instant.now());
+        long hoursOld = ChronoUnit.HOURS.between(createTime, LocalDateTime.now());
         double timeDecay;
 
         if (hoursOld <= 72) {

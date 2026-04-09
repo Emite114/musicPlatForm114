@@ -13,7 +13,7 @@ spring:
       database: 0              # 数据库编号（0-15）
 
   datasource:
-    url: jdbc:mysql://localhost:3306/musicplatform?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai
+    url: jdbc:mysql://localhost:3306/musicplatform?useUnicode=true&characterEncoding=utf8
     username: root
     password: root
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -27,3 +27,4 @@ spring:
 logging:
   level:
     org.springframework.security: DEBUG
+

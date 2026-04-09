@@ -8,10 +8,7 @@ import com.example.musicplatform.repository.*;
 import com.example.musicplatform.service.PostService;
 import com.example.musicplatform.service.redisService.PostStatsService;
 import com.example.musicplatform.service.redisService.RedisConnectionChecker;
-import com.example.musicplatform.util.CalculateUtil;
-import com.example.musicplatform.util.LogUtil;
-import com.example.musicplatform.util.PageableUtil;
-import com.example.musicplatform.util.SecurityUtils;
+import com.example.musicplatform.util.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -200,7 +197,8 @@ public class PostServiceImpl implements PostService {
             LogUtil.redisFailLog();
             postRepository.decreaseLikeCountByPostId(postId);
             Post post = postRepository.findById(postId).orElseThrow(()->new RuntimeException("意外的错误"));
-            double hotScore = CalculateUtil.calculatePostHotScore(post.getViewCount(),post.getLikeCount(),post.getCommentCount(),post.getFavouriteCount(),post.getCreateTime());
+
+            double hotScore = CalculateUtil.calculatePostHotScore(post.getViewCount(),post.getLikeCount(),post.getCommentCount(),post.getFavouriteCount(), post.getCreateTime());
             postRepository.updateHotScore(postId, hotScore);
             return  true;
 
@@ -218,6 +216,7 @@ public class PostServiceImpl implements PostService {
             LogUtil.redisFailLog();
             postRepository.increaseLikeCountByPostId(postId);
             Post post = postRepository.findById(postId).orElseThrow(()->new RuntimeException("意外的错误"));
+
             double hotScore = CalculateUtil.calculatePostHotScore(post.getViewCount(),post.getLikeCount(),post.getCommentCount(),post.getFavouriteCount(),post.getCreateTime());
             postRepository.updateHotScore(postId, hotScore);
             return false;

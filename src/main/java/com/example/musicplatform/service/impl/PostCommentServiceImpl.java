@@ -15,10 +15,7 @@ import com.example.musicplatform.service.PostCommentService;
 import com.example.musicplatform.service.UserService;
 import com.example.musicplatform.service.redisService.PostStatsService;
 import com.example.musicplatform.service.redisService.RedisConnectionChecker;
-import com.example.musicplatform.util.CalculateUtil;
-import com.example.musicplatform.util.LogUtil;
-import com.example.musicplatform.util.PageableUtil;
-import com.example.musicplatform.util.SecurityUtils;
+import com.example.musicplatform.util.*;
 import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -176,7 +173,7 @@ public class PostCommentServiceImpl implements PostCommentService {
             }
             postRepository.decreaseCommentCountByPostId(post.getId());
             Post newPost = postRepository.findById(postComment.getPostId()).orElseThrow(()->new RuntimeException("意外的错误"));
-            double hotScore = CalculateUtil.calculatePostHotScore(newPost.getViewCount(),newPost.getLikeCount(),newPost.getCommentCount(),newPost.getFavouriteCount(),newPost.getCreateTime());
+            double hotScore = CalculateUtil.calculatePostHotScore(newPost.getViewCount(),newPost.getLikeCount(),newPost.getCommentCount(),newPost.getFavouriteCount(), newPost.getCreateTime());
             postRepository.updateHotScore(postComment.getPostId(), hotScore);
         });
     }
