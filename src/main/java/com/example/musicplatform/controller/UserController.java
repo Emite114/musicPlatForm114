@@ -112,14 +112,14 @@ public class UserController {
     }
     @Autowired
     PostService postService;
-    @GetMapping("/user/main/{username}/posts")
+    @GetMapping("/user/main/{id}/posts")
     public Response<?> userPosts(
-            @PathVariable String username,
+            @PathVariable Long id,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
 
         return Response.success(
-                postService.getUserPosts(username, page, size),
+                postService.getUserPosts(id, page, size),
                 "查询成功"
         );
     }

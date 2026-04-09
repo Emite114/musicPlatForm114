@@ -154,9 +154,6 @@ public class UserServiceImpl implements UserService {
     //模糊查询用户
     @Override
     public Page<UserSimpleDTO> searchUser(String keyword, int page, int pageSize) {
-        if (keyword == null || keyword.length() < 2) {
-            throw new RuntimeException("关键词至少2个字符");
-        }
         Pageable pageable = PageRequest.of(page, pageSize);
 
         Page<User> userPage = userRepository.search(keyword, pageable);

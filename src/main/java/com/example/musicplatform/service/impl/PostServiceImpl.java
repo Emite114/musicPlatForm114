@@ -157,9 +157,7 @@ public class PostServiceImpl implements PostService {
     //模糊查找帖子
     @Override
     public Page<PostSimpleDTO> page(String keyword, int page, int size,String sort) {
-        if (keyword == null || keyword.length() < 2) {
-            throw new RuntimeException("关键词至少2个字符");
-        }
+
         Pageable pageable = PageableUtil.initializePageable(page, size, sort);
         Page<Post> postPage = postRepository.search(keyword, pageable);
         return entityPageToDTOPage(postPage);
@@ -167,9 +165,9 @@ public class PostServiceImpl implements PostService {
 
     //查询用户所有帖子
     @Override
-    public Page<PostSimpleDTO> getUserPosts(String username, int page, int size) {
+    public Page<PostSimpleDTO> getUserPosts(Long id, int page, int size) {
         // 1️⃣ 查用户
-        User user = userRepository.findByUsername(username)
+        User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("用户不存在"));
 
         // 2️⃣ 分页查帖子

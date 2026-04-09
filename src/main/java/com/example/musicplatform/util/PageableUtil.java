@@ -5,6 +5,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
 public class PageableUtil {
+    //歌曲的playcount 约等于帖子的viewcount
     public static Pageable initializePageable(int page, int size, String sort) {
         Pageable pageable;
         if ("like".equals(sort) || sort == null) {

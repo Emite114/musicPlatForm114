@@ -12,6 +12,7 @@ import com.example.musicplatform.service.redisService.RedisConnectionChecker;
 import com.example.musicplatform.service.redisService.SongStatsService;
 import com.example.musicplatform.util.CalculateUtil;
 import com.example.musicplatform.util.LogUtil;
+import com.example.musicplatform.util.PageableUtil;
 import com.example.musicplatform.util.SecurityUtils;
 import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
@@ -119,11 +120,8 @@ public class SongServiceImpl implements SongService {
 
 
     @Override
-    public Page<SongSimpleDTO> page(String keyword, int page, int pageSize) {
-        if(keyword==null) {
-            throw new RuntimeException("关键字不能为空");
-        }
-        Pageable pageable = PageRequest.of(page, pageSize);
+    public Page<SongSimpleDTO> page(String keyword, int page, int pageSize,String sort) {
+        Pageable pageable =  PageableUtil.initializePageable(page, pageSize,sort);
         Page<Song> songPage=songRepository.search(keyword, pageable);
         return entityPageToDTOPage(songPage);
     }

@@ -12,7 +12,7 @@ import org.springframework.data.repository.query.Param;
 public interface SongService {
     void uploadSong(SongUploadRequest song);
     SongDetailsResponse getSongDetails(@Param("id") Long id);
-    Page<SongSimpleDTO> page(String keyword, int page, int pageSize);
+    Page<SongSimpleDTO> page(String keyword, int page, int pageSize,String sort);
     boolean toggleFavourite(Long songId);
     Page<SongSimpleDTO> getUserOwnFavouriteSongs(String keyword, int page, int size);
 

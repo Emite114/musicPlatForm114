@@ -10,7 +10,7 @@ public interface PostService {
     void createPost(PostCreateRequest request);
     PostDetailResponse getPostById(@PathVariable Long id);
     Page<PostSimpleDTO> page(String keyword, int page, int size,String sort);
-    Page<PostSimpleDTO> getUserPosts(String username, int page, int size);
+    Page<PostSimpleDTO> getUserPosts(Long id, int page, int size);
     boolean toggleLike(Long postId);
     boolean toggleFavourite(Long postId);
     Page<PostSimpleDTO> getUserOwnFavouritePosts(String keyword, int page, int size);
