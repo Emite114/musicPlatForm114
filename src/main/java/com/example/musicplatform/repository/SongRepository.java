@@ -46,4 +46,14 @@ public interface SongRepository extends JpaRepository<Song, Long> {
     @Modifying
     @Query("UPDATE Song s SET s.favouriteCount = s.favouriteCount - 1 WHERE s.id = :songId")
     void decreaseFavouriteCountBySongId(@Param("songId") Long songId);
+
+    @Transactional
+    @Modifying
+    @Query("UPDATE Song s SET s.playCount = s.playCount+1 WHERE s.id = :songId")
+    void increasePlayCountBySongId(@Param("songId") Long songId);
+
+    @Transactional
+    @Modifying
+    @Query("UPDATE Song s SET s.hotScore=:hotScore WHERE s.id= :songId")
+    void updateHotScore(@Param("songId") Long songId, @Param("hotScore") double hotScore);
 }

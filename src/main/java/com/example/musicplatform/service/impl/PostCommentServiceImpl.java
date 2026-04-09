@@ -3,6 +3,7 @@ package com.example.musicplatform.service.impl;
 import com.example.musicplatform.converters.PostCommentConverter;
 import com.example.musicplatform.dto.request.PostCommentCreateRequest;
 import com.example.musicplatform.dto.response.PostCommentResponse;
+import com.example.musicplatform.entity.Post;
 import com.example.musicplatform.entity.PostComment;
 import com.example.musicplatform.entity.User;
 import com.example.musicplatform.entity.UserLikePostComment;
@@ -14,6 +15,7 @@ import com.example.musicplatform.service.PostCommentService;
 import com.example.musicplatform.service.UserService;
 import com.example.musicplatform.service.redisService.PostStatsService;
 import com.example.musicplatform.service.redisService.RedisConnectionChecker;
+import com.example.musicplatform.util.CalculateUtil;
 import com.example.musicplatform.util.LogUtil;
 import com.example.musicplatform.util.PageableUtil;
 import com.example.musicplatform.util.SecurityUtils;
@@ -67,6 +69,15 @@ public class PostCommentServiceImpl implements PostCommentService {
             postCommentParent.setCreateTime(LocalDateTime.now());
             postCommentRepository.save(postCommentParent);
             postRepository.increaseCommentCountByPostId(postCommentParent.getPostId());
+            if (redisConnectionChecker.isRedisConnected()){
+                postStatsService.increasePostCommentCount(request.getPostId());
+            }else {
+                LogUtil.redisFailLog();
+                postRepository.increaseCommentCountByPostId(request.getPostId());
+                Post newPost = postRepository.findById(request.getPostId()).orElseThrow(()->new RuntimeException("意外的错误"));
+                double hotScore = CalculateUtil.calculatePostHotScore(newPost.getViewCount(),newPost.getLikeCount(),newPost.getCommentCount(),newPost.getFavouriteCount(),newPost.getCreateTime());
+                postRepository.updateHotScore(request.getPostId(), hotScore);
+            }
         }else {
             Optional<PostComment> op = postCommentRepository.findById(request.getParentId());
             op.orElseThrow(()->new RuntimeException("找不到根评论"));
@@ -83,11 +94,12 @@ public class PostCommentServiceImpl implements PostCommentService {
                 postStatsService.increasePostCommentCount(request.getPostId());
             }else {
                 LogUtil.redisFailLog();
-                postRepository.increaseCommentCountByPostId(postCommentChild.getPostId());
+                postRepository.increaseCommentCountByPostId(request.getPostId());
+                Post newPost = postRepository.findById(request.getPostId()).orElseThrow(()->new RuntimeException("意外的错误"));
+                double hotScore = CalculateUtil.calculatePostHotScore(newPost.getViewCount(),newPost.getLikeCount(),newPost.getCommentCount(),newPost.getFavouriteCount(),newPost.getCreateTime());
+                postRepository.updateHotScore(request.getPostId(), hotScore);
             }
         }
-
-
     }
 
     @Override
@@ -149,6 +161,7 @@ public class PostCommentServiceImpl implements PostCommentService {
     }
 
     @Override
+    @Transactional
     public void deleteComment(Long commentId) {
         PostComment postComment = postCommentRepository.findById(commentId).orElse(null);
         if (postComment != null) {
@@ -158,7 +171,13 @@ public class PostCommentServiceImpl implements PostCommentService {
         }else {throw new RuntimeException("找不到该评论");}
         postCommentRepository.save(postComment);
         postRepository.findById(postComment.getPostId()).ifPresent(post -> {
+            if (redisConnectionChecker.isRedisConnected()){
+                postStatsService.decreasePostCommentCount(postComment.getPostId());
+            }
             postRepository.decreaseCommentCountByPostId(post.getId());
+            Post newPost = postRepository.findById(postComment.getPostId()).orElseThrow(()->new RuntimeException("意外的错误"));
+            double hotScore = CalculateUtil.calculatePostHotScore(newPost.getViewCount(),newPost.getLikeCount(),newPost.getCommentCount(),newPost.getFavouriteCount(),newPost.getCreateTime());
+            postRepository.updateHotScore(postComment.getPostId(), hotScore);
         });
     }
 }

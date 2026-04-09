@@ -10,6 +10,7 @@ import com.example.musicplatform.repository.*;
 import com.example.musicplatform.service.SongService;
 import com.example.musicplatform.service.redisService.RedisConnectionChecker;
 import com.example.musicplatform.service.redisService.SongStatsService;
+import com.example.musicplatform.util.CalculateUtil;
 import com.example.musicplatform.util.LogUtil;
 import com.example.musicplatform.util.SecurityUtils;
 import jakarta.transaction.Transactional;
@@ -104,10 +105,15 @@ public class SongServiceImpl implements SongService {
         }
         if(redisConnectionChecker.isRedisConnected()){
             songStatsService.increaseSongPlayCount(song.getId());
+            details.setPlayCount(details.getPlayCount()+1);
             return details;
         }
         LogUtil.redisFailLog();
-        song.setPlayCount(song.getPlayCount()+1);
+        songRepository.increasePlayCountBySongId(id);
+
+        double hotScore = CalculateUtil.calculateSongHotScore(song.getFavouriteCount(),song.getCommentCount(),song.getPlayCount()+1,song.getCreatedAt());
+        songRepository.updateHotScore(id,hotScore);
+
         return details;
     }
 
@@ -142,6 +148,9 @@ public class SongServiceImpl implements SongService {
             }
             LogUtil.redisFailLog();
             songRepository.increaseFavouriteCountBySongId(songId);
+            Song  song = songRepository.findById(songId).get();
+            double hotScore = CalculateUtil.calculateSongHotScore(song.getFavouriteCount(),song.getCommentCount(),song.getPlayCount(),song.getCreatedAt());
+            songRepository.updateHotScore(songId,hotScore);
             return false;
         }
         //有就删
@@ -153,9 +162,12 @@ public class SongServiceImpl implements SongService {
             }
             LogUtil.redisFailLog();
             songRepository.decreaseFavouriteCountBySongId(songId);
+            Song  song = songRepository.findById(songId).get();
+            double hotScore = CalculateUtil.calculateSongHotScore(song.getFavouriteCount(),song.getCommentCount(),song.getPlayCount(),song.getCreatedAt());
+            songRepository.updateHotScore(songId,hotScore);
             return true;
         }
-        throw new RuntimeException();
+        throw new RuntimeException("意外的错误");
     }
 
     @Override

@@ -5,10 +5,12 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface MessageRepository extends JpaRepository<Message, Long> {
-    Optional<Message> findBySpeakingUserIdAndReceiveUserId(Long speakingUserId, Long receiveUserId);
+//    List<Message> findBySpeakingUserIdAndReceiveUserId(Long speakingUserId, Long receiveUserId);
+    boolean existsBySpeakingUserIdAndReceiveUserId(Long speakingUserId, Long receiveUserId);
 
     Page<Message> findByConversationIdOrderByCreateDate(Long conversationId, Pageable pageable);
 }

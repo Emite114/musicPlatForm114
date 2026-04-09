@@ -20,6 +20,7 @@ public class PostDetailResponse {
     private List<String> mediaUrlList;
     private Long likeCount;
     private Long commentCount;
+    private Long viewCount;
     private boolean ifIsFollowed;
 
     public PostDetailResponse(Post post) {

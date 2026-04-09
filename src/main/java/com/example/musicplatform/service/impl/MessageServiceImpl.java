@@ -125,12 +125,12 @@ public class MessageServiceImpl implements MessageService {
             return CreateMessage(request);
         }
         //未任何关系且 发消息的人还 未发任何消息时 可以发一条
-        if(messageRepository.findBySpeakingUserIdAndReceiveUserId(receiveUserId,speakingUserId).isEmpty()){
+        if(!messageRepository.existsBySpeakingUserIdAndReceiveUserId(receiveUserId,speakingUserId)){
             return CreateMessage(request);
         }
         //互相发了一条消息后即可继续
-        if(messageRepository.findBySpeakingUserIdAndReceiveUserId(speakingUserId,receiveUserId).isPresent()
-                &&messageRepository.findBySpeakingUserIdAndReceiveUserId(receiveUserId,speakingUserId).isPresent()){
+        if(messageRepository.existsBySpeakingUserIdAndReceiveUserId(speakingUserId,receiveUserId)
+                &&messageRepository.existsBySpeakingUserIdAndReceiveUserId(receiveUserId,speakingUserId)){
             return CreateMessage(request);
         }
         else{

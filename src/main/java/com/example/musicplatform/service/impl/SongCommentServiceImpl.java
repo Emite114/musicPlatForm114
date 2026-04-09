@@ -5,6 +5,7 @@ import com.example.musicplatform.dto.request.SongCommentCreateRequest;
 
 import com.example.musicplatform.dto.response.SongCommentResponse;
 
+import com.example.musicplatform.entity.Song;
 import com.example.musicplatform.entity.SongComment;
 import com.example.musicplatform.entity.UserLikeSongComment;
 import com.example.musicplatform.repository.SongCommentRepository;
@@ -14,6 +15,7 @@ import com.example.musicplatform.repository.UserRepository;
 import com.example.musicplatform.service.SongCommentService;
 import com.example.musicplatform.service.redisService.RedisConnectionChecker;
 import com.example.musicplatform.service.redisService.SongStatsService;
+import com.example.musicplatform.util.CalculateUtil;
 import com.example.musicplatform.util.LogUtil;
 import com.example.musicplatform.util.PageableUtil;
 import com.example.musicplatform.util.SecurityUtils;
@@ -86,6 +88,9 @@ public class SongCommentServiceImpl implements SongCommentService {
             }
             LogUtil.redisFailLog();
             songRepository.increaseCommentCountBySongId(comment.getSongId());
+            Song song = songRepository.findById(comment.getSongId()).orElseThrow(()->new RuntimeException("意外的错误"));
+            double hotScore = CalculateUtil.calculateSongHotScore(song.getFavouriteCount(),song.getCommentCount(),song.getPlayCount(),song.getCreatedAt());
+            songRepository.updateHotScore(comment.getSongId(), hotScore);
         }
     }
 
@@ -149,6 +154,8 @@ public class SongCommentServiceImpl implements SongCommentService {
             }
             LogUtil.redisFailLog();
             songRepository.decreaseCommentCountBySongId(song.getId());
+            double hotScore = CalculateUtil.calculateSongHotScore(song.getFavouriteCount(),song.getCommentCount()-1,song.getPlayCount(),song.getCreatedAt());
+            songRepository.updateHotScore(song.getId(), hotScore);
         });
     }
 

@@ -8,6 +8,7 @@ import com.example.musicplatform.repository.*;
 import com.example.musicplatform.service.PostService;
 import com.example.musicplatform.service.redisService.PostStatsService;
 import com.example.musicplatform.service.redisService.RedisConnectionChecker;
+import com.example.musicplatform.util.CalculateUtil;
 import com.example.musicplatform.util.LogUtil;
 import com.example.musicplatform.util.PageableUtil;
 import com.example.musicplatform.util.SecurityUtils;
@@ -117,6 +118,7 @@ public class PostServiceImpl implements PostService {
             throw new RuntimeException("帖子已被封禁");
         }
         PostDetailResponse postDetailResponse = new PostDetailResponse(post);
+        postDetailResponse.setViewCount(post.getViewCount());
         Long currentUserId = SecurityUtils.getCurrentUserId();
         postDetailResponse.setIfIsFollowed(followRepository.findByUserIdAndFollowUserId(currentUserId, post.getUserId()).isPresent());
         Optional<User> optionalUser = userRepository.findById(post.getUserId());
@@ -141,12 +143,17 @@ public class PostServiceImpl implements PostService {
         postDetailResponse.setMediaUrlList(mediaUrlList);
         }
         //浏览量
+        postDetailResponse.setViewCount(postDetailResponse.getViewCount()+1);
         if(redisConnectionChecker.isRedisConnected()){
             postStatsService.increasePostViewCount(post.getId());
+
         }else {
             LogUtil.redisFailLog();
             postRepository.increaseViewCountByPostId(post.getId());
+            double hotScore = CalculateUtil.calculatePostHotScore(post.getViewCount()+1,post.getLikeCount(),post.getCommentCount(),post.getFavouriteCount(),post.getCreateTime());
+            postRepository.updateHotScore(post.getId(), hotScore);
         }
+
         return postDetailResponse;
     }
 
@@ -192,6 +199,9 @@ public class PostServiceImpl implements PostService {
             }
             LogUtil.redisFailLog();
             postRepository.decreaseLikeCountByPostId(postId);
+            Post post = postRepository.findById(postId).orElseThrow(()->new RuntimeException("意外的错误"));
+            double hotScore = CalculateUtil.calculatePostHotScore(post.getViewCount(),post.getLikeCount(),post.getCommentCount(),post.getFavouriteCount(),post.getCreateTime());
+            postRepository.updateHotScore(postId, hotScore);
             return  true;
 
         } else {
@@ -207,6 +217,9 @@ public class PostServiceImpl implements PostService {
             }
             LogUtil.redisFailLog();
             postRepository.increaseLikeCountByPostId(postId);
+            Post post = postRepository.findById(postId).orElseThrow(()->new RuntimeException("意外的错误"));
+            double hotScore = CalculateUtil.calculatePostHotScore(post.getViewCount(),post.getLikeCount(),post.getCommentCount(),post.getFavouriteCount(),post.getCreateTime());
+            postRepository.updateHotScore(postId, hotScore);
             return false;
         }
     }
@@ -229,6 +242,9 @@ public class PostServiceImpl implements PostService {
             }
             LogUtil.redisFailLog();
             postRepository.increaseFavouriteCountByPostId(postId);
+            Post post = postRepository.findById(postId).get();
+            double hotScore = CalculateUtil.calculatePostHotScore(post.getViewCount(),post.getLikeCount(),post.getCommentCount(),post.getFavouriteCount(),post.getCreateTime());
+            postRepository.updateHotScore(postId, hotScore);
             return false;
         }
         if (userFavouritePostRepository.findByPostIdAndUserId(postId,userId).isPresent()){
@@ -239,6 +255,9 @@ public class PostServiceImpl implements PostService {
             }
             LogUtil.redisFailLog();
             postRepository.decreaseFavouriteCountByPostId(postId);
+            Post post = postRepository.findById(postId).get();
+            double hotScore = CalculateUtil.calculatePostHotScore(post.getViewCount(),post.getLikeCount(),post.getCommentCount(),post.getFavouriteCount(),post.getCreateTime());
+            postRepository.updateHotScore(postId, hotScore);
             return true;
         }
         throw new RuntimeException("意外的错误");
