@@ -19,6 +19,7 @@ public interface UserService {
     Page<UserSimpleDTO> getOwnFanList(int page, int pageSize);
     String login(LoginRequest loginRequest);
     OnesUserDetail getOnesUserDetail(Long id);
+    boolean isAdmin(Long id);
 
 
 

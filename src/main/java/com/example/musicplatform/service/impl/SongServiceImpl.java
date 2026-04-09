@@ -86,8 +86,8 @@ public class SongServiceImpl implements SongService {
             song.setSongArtist(songRequest.getSongArtist());
         }else {song.setSongArtist("N/A");}
         song.setUploadBy(SecurityUtils.getCurrentUserId());
-        song.setCreatedAt(LocalDateTime.now());
-        song.setUpdatedAt(LocalDateTime.now());
+        song.setCreateTime(LocalDateTime.now());
+        song.setUpdateTime(LocalDateTime.now());
         songRepository.save(song);
 
     }
@@ -112,7 +112,7 @@ public class SongServiceImpl implements SongService {
         LogUtil.redisFailLog();
         songRepository.increasePlayCountBySongId(id);
 
-        double hotScore = CalculateUtil.calculateSongHotScore(song.getFavouriteCount(),song.getCommentCount(),song.getPlayCount()+1,song.getCreatedAt());
+        double hotScore = CalculateUtil.calculateSongHotScore(song.getFavouriteCount(),song.getCommentCount(),song.getPlayCount()+1,song.getCreateTime());
         songRepository.updateHotScore(id,hotScore);
 
         return details;
@@ -121,7 +121,7 @@ public class SongServiceImpl implements SongService {
 
     @Override
     public Page<SongSimpleDTO> page(String keyword, int page, int pageSize,String sort) {
-        Pageable pageable =  PageableUtil.initializePageable(page, pageSize,sort);
+        Pageable pageable =  PageableUtil.initializeSongPageable(page, pageSize,sort);
         Page<Song> songPage=songRepository.search(keyword, pageable);
         return entityPageToDTOPage(songPage);
     }
@@ -147,7 +147,7 @@ public class SongServiceImpl implements SongService {
             LogUtil.redisFailLog();
             songRepository.increaseFavouriteCountBySongId(songId);
             Song  song = songRepository.findById(songId).get();
-            double hotScore = CalculateUtil.calculateSongHotScore(song.getFavouriteCount(),song.getCommentCount(),song.getPlayCount(),song.getCreatedAt());
+            double hotScore = CalculateUtil.calculateSongHotScore(song.getFavouriteCount(),song.getCommentCount(),song.getPlayCount(),song.getCreateTime());
             songRepository.updateHotScore(songId,hotScore);
             return false;
         }
@@ -161,7 +161,7 @@ public class SongServiceImpl implements SongService {
             LogUtil.redisFailLog();
             songRepository.decreaseFavouriteCountBySongId(songId);
             Song  song = songRepository.findById(songId).get();
-            double hotScore = CalculateUtil.calculateSongHotScore(song.getFavouriteCount(),song.getCommentCount(),song.getPlayCount(),song.getCreatedAt());
+            double hotScore = CalculateUtil.calculateSongHotScore(song.getFavouriteCount(),song.getCommentCount(),song.getPlayCount(),song.getCreateTime());
             songRepository.updateHotScore(songId,hotScore);
             return true;
         }

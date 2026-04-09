@@ -52,7 +52,7 @@ public class SongStatsService {
         Long cc = song.getCommentCount()+getIncrement("song:commentCount"+songId);
        //播放量
         Long pc = song.getPlayCount()+getIncrement("song:playCount"+songId);
-        double hotScore= CalculateUtil.calculateSongHotScore(fc,cc,pc,song.getCreatedAt());
+        double hotScore= CalculateUtil.calculateSongHotScore(fc,cc,pc,song.getCreateTime());
         return new SongStats(songId,pc,fc,cc,hotScore);
     }
 

@@ -35,10 +35,10 @@ public class Song {
     private Long commentCount = 0L;
     @Column(name = "favourite_count")
     private Long favouriteCount = 0L;
-    @Column(name = "creat_at")
-    private LocalDateTime createdAt;
-    @Column(name="update_at")
-    private LocalDateTime updatedAt;
+    @Column(name = "create_time")
+    private LocalDateTime createTime;
+    @Column(name="update_time")
+    private LocalDateTime updateTime;
     @Column(name="hot_score")
     private double hotScore = 0.0;
 

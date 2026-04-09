@@ -23,7 +23,7 @@ public interface SongRepository extends JpaRepository<Song, Long> {
            s.songName LIKE %:keyword% OR 
            s.songArtist LIKE %:keyword% AND 
            s.isDelete = false)
-    ORDER BY s.createdAt DESC
+    ORDER BY s.createTime DESC
 """)
     Page<Song> search(@Param("keyword") String keyword, Pageable pageable);
 

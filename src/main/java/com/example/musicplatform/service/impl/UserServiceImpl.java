@@ -29,6 +29,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -234,5 +235,16 @@ public class UserServiceImpl implements UserService {
             detail.setAvatarUrl(user.getAvatarUrl());
         }
         return detail;
+    }
+
+    @Override
+    public boolean isAdmin(Long id) {
+        List<UserRole> userRole = userRoleRepository.findByUserId(id);
+        for (UserRole ur : userRole) {
+            if (ur.getRoleId().equals(2L)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

@@ -89,7 +89,7 @@ public class SongCommentServiceImpl implements SongCommentService {
             LogUtil.redisFailLog();
             songRepository.increaseCommentCountBySongId(comment.getSongId());
             Song song = songRepository.findById(comment.getSongId()).orElseThrow(()->new RuntimeException("意外的错误"));
-            double hotScore = CalculateUtil.calculateSongHotScore(song.getFavouriteCount(),song.getCommentCount(),song.getPlayCount(),song.getCreatedAt());
+            double hotScore = CalculateUtil.calculateSongHotScore(song.getFavouriteCount(),song.getCommentCount(),song.getPlayCount(),song.getCreateTime());
             songRepository.updateHotScore(comment.getSongId(), hotScore);
         }
     }
@@ -154,7 +154,7 @@ public class SongCommentServiceImpl implements SongCommentService {
             }
             LogUtil.redisFailLog();
             songRepository.decreaseCommentCountBySongId(song.getId());
-            double hotScore = CalculateUtil.calculateSongHotScore(song.getFavouriteCount(),song.getCommentCount()-1,song.getPlayCount(),song.getCreatedAt());
+            double hotScore = CalculateUtil.calculateSongHotScore(song.getFavouriteCount(),song.getCommentCount()-1,song.getPlayCount(),song.getCreateTime());
             songRepository.updateHotScore(song.getId(), hotScore);
         });
     }
