@@ -6,6 +6,7 @@ import com.example.musicplatform.dto.request.LoginRequest;
 import com.example.musicplatform.dto.response.UserDetailsResponse;
 import com.example.musicplatform.entity.User;
 import com.example.musicplatform.service.PostService;
+import com.example.musicplatform.service.SseService;
 import com.example.musicplatform.service.UserService;
 import com.example.musicplatform.service.impl.TokenBlacklistService;
 import com.example.musicplatform.util.JwtUtil;
@@ -25,9 +26,9 @@ public class UserController {
     @Autowired
     UserService userService;
     @Autowired
-    private AuthenticationManager authenticationManager;
-    @Autowired
     private JwtUtil jwtUtil;
+    @Autowired
+    SseService sseService;
 
     public UserController(TokenBlacklistService tokenBlacklistService) {
         this.tokenBlacklistService = tokenBlacklistService;
@@ -180,6 +181,14 @@ public class UserController {
             return Response.success(userService.getOnesUserDetail(id),"查找用户主页成功");
         }catch (Exception e){
             return Response.error(null,e.getMessage()+"  查找用户主页失败");
+        }
+    }
+    @GetMapping("/user/ifIsAdmin")
+    public Response<?> ifIsAdmin(){
+        try {
+            return Response.success(sseService.isAdmin(),"请求成功");
+        }catch (Exception e){
+            return Response.error(null,e.getMessage());
         }
     }
 

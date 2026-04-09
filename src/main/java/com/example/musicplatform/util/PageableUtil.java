@@ -63,8 +63,12 @@ public class PageableUtil {
                     Sort.Order.desc("hotScore"),
                     Sort.Order.desc("createTime")));
 
-        }
-        else {
+        } else if ("playCount".equals(sort)) {
+            pageable = PageRequest.of(page, size, Sort.by(
+                    Sort.Order.desc("playCount"),
+                    Sort.Order.desc("createTime")));
+
+        } else {
             throw new RuntimeException("未知的排序");
         }
         return pageable;
