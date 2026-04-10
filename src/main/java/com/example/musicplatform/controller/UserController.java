@@ -118,11 +118,14 @@ public class UserController {
             @PathVariable Long id,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
-
+        try {
         return Response.success(
                 postService.getUserPosts(id, page, size),
                 "查询成功"
         );
+        }catch (Exception e){
+            return Response.error(null,e.getMessage()+" 查询失败");
+        }
     }
     @GetMapping("/user/search")
     public Response<?> searchUser(

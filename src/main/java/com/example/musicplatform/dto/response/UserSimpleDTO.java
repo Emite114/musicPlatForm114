@@ -4,7 +4,7 @@ import lombok.Data;
 
 @Data
 public class UserSimpleDTO {
-    private Long Id;//converter
+    private Long id;//converter
     private String username;//converter
     private String avatarUrl="/default/defaultUserAvatar.png";
     private int postCount;

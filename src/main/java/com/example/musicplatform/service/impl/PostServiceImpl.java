@@ -137,7 +137,7 @@ public class PostServiceImpl implements PostService {
         }
         postDetailResponse.setUserId(post.getUserId());
         postDetailResponse.setIfIsFollowed(followRepository.findByUserIdAndFollowUserId(currentUserId, user.getId()).isPresent());
-        postDetailResponse.setIfIsMyFan(followRepository.findByUserIdAndFollowUserId(currentUserId, user.getId()).isPresent());
+        postDetailResponse.setIfIsMyFan(followRepository.findByUserIdAndFollowUserId(user.getId(), currentUserId).isPresent());
 
         List<PostMedia> postMediaList = postMediaRepository.findAllByPostId(post.getId());
         if (postMediaList == null) {

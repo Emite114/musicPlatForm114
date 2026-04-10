@@ -5,7 +5,7 @@ import lombok.Data;
 
 @Data
 public class SongSimpleDTO {
-    private Long Id;//converter
+    private Long id;//converter
     private String songName;//converter
     private String songArtist;//converter
     private String avatarUrl="/default/defaultSongAvatar.png";//converter

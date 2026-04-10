@@ -37,7 +37,7 @@ public class PostCommentController {
             @RequestParam Long postId,
             @RequestParam(defaultValue = "0") Integer page,
             @RequestParam(defaultValue = "10") Integer size,
-            @RequestParam String sort
+            @RequestParam(defaultValue = "like") String sort
     ){
         try {
             return Response.success(postCommentService.pagePostParentComments(postId, page, size, sort), "获取父评论成功");
@@ -50,7 +50,7 @@ public class PostCommentController {
             @RequestParam Long parentId,
             @RequestParam(defaultValue = "0") Integer page,
             @RequestParam(defaultValue = "5") Integer size,
-            @RequestParam String sort
+            @RequestParam(defaultValue = "like") String sort
     ){
         try {
             return Response.success(postCommentService.pagePostChildrenComments(parentId,page,size,sort),"获取子评论成功");

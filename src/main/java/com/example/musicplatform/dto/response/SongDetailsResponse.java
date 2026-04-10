@@ -15,7 +15,7 @@ public class SongDetailsResponse {
     private Long playCount;
     //done
     private Long commentCount;
-    private Long favoriteCount;
-    private boolean ifIsFavorite;
+    private Long favouriteCount;
+    private boolean ifIsFavourite;
 
 }

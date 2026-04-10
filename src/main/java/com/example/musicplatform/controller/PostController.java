@@ -41,7 +41,10 @@ public class PostController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "time")String sort) {
-        return Response.success(postService.page(keyword, page, size,sort), "查询成功");
+        try {
+            return Response.success(postService.page(keyword, page, size,sort), "查询成功");
+        }catch (Exception e){ return Response.error(null,e.getMessage()+" 查询失败"); }
+
     }
     @PostMapping("/post/favourite/{postId}")
     public Response<?> favourite(@PathVariable Long postId) {

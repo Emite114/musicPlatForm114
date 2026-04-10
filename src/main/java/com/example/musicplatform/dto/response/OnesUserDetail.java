@@ -6,7 +6,7 @@ import lombok.Data;
 @Data
 public class OnesUserDetail {
     private Long id;
-    private String userName;
+    private String username;
     private String avatarUrl = "/default/defaultUserAvatar.png";
     private Long followCount;
     private Long fanCount;

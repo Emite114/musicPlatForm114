@@ -5,7 +5,7 @@ import lombok.Data;
 import java.time.LocalDateTime;
 @Data
 public class UserDetailsResponse {
-    private Long UserId;
+    private Long id;
     private String username;
     private String email;
     private String avatarUrl="/default/defaultUserAvatar.png";
@@ -14,7 +14,7 @@ public class UserDetailsResponse {
     private Long followCount;
     private Long fanCount;
     public UserDetailsResponse(User user) {
-        this.UserId = user.getId();
+        this.id = user.getId();
         this.username = user.getUsername();
         this.email = user.getEmail();
         if (user.getAvatarUrl()!=null){

@@ -63,7 +63,10 @@ public class SongServiceImpl implements SongService {
         }
         song.setSongName(songRequest.getSongName());
         String audioExt =songRequest.getAudioUrl().substring(songRequest.getAudioUrl().lastIndexOf("."));
-        String lrcExt =songRequest.getLrcUrl().substring(songRequest.getLrcUrl().lastIndexOf("."));
+        String lrcExt="";
+        if(songRequest.getLrcUrl() != null){
+        lrcExt =songRequest.getLrcUrl().substring(songRequest.getLrcUrl().lastIndexOf("."));
+        }
         String avatarExt = "";
         if(songRequest.getAvatarUrl() != null) {
             avatarExt = songRequest.getAvatarUrl().substring(songRequest.getAvatarUrl().lastIndexOf("."));
@@ -108,8 +111,8 @@ public class SongServiceImpl implements SongService {
             details.setAvatarUrl(song.getAvatarUrl());
         }
         details.setCommentCount(song.getCommentCount());
-        details.setFavoriteCount(song.getFavouriteCount());
-        details.setIfIsFavorite(userFavouriteSongRepository.findBySongIdAndUserId(song.getId(),SecurityUtils.getCurrentUserId()).isPresent());
+        details.setFavouriteCount(song.getFavouriteCount());
+        details.setIfIsFavourite(userFavouriteSongRepository.findBySongIdAndUserId(song.getId(),SecurityUtils.getCurrentUserId()).isPresent());
         if(redisConnectionChecker.isRedisConnected()){
             songStatsService.increaseSongPlayCount(song.getId());
             details.setPlayCount(details.getPlayCount()+1);

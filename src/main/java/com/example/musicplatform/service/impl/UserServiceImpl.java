@@ -236,7 +236,7 @@ public class UserServiceImpl implements UserService {
     public OnesUserDetail getOnesUserDetail(Long id) {
         User user = userRepository.findById(id).orElseThrow(()->new RuntimeException("找不到用户"));
         OnesUserDetail detail = userConverter.userToOnesUserDetail(user);
-        detail.setUserName(user.getUsername());
+        detail.setUsername(user.getUsername());
         detail.setIfIsFollowed(followRepository.findByUserIdAndFollowUserId(SecurityUtils.getCurrentUserId(), id).isPresent());
         detail.setIfIsMyFan(followRepository.findByUserIdAndFollowUserId(id,SecurityUtils.getCurrentUserId()).isPresent());
         if (user.getAvatarUrl()!=null) {
