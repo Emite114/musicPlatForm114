@@ -93,9 +93,9 @@ public class UserController {
         }
     }
     @PutMapping("/user/update/gender")//有三种性别male female unknown
-    public Response<?> updateGender(@RequestBody String request) {
+    public Response<?> updateGender(@RequestBody String newGender) {
         try {
-            User.GenderEnum gender = User.GenderEnum.valueOf(request.toLowerCase());
+            User.GenderEnum gender = User.GenderEnum.valueOf(newGender.toLowerCase());
             userService.updateUserGender(gender);
             return Response.success(null,"性别修改成功");
         }catch (Exception e){
@@ -175,7 +175,7 @@ public class UserController {
             return Response.error(null,e.getMessage());
         }
     }
-    @GetMapping("/user/getOneDetail/{id}")
+    @GetMapping("/user/getOnesDetail/{id}")
     public Response<?> getOneDetail(@PathVariable Long id){
         try {
             return Response.success(userService.getOnesUserDetail(id),"查找用户主页成功");
@@ -183,12 +183,35 @@ public class UserController {
             return Response.error(null,e.getMessage()+"  查找用户主页失败");
         }
     }
+    @GetMapping("/user/getOnesFans")
+    public Response<?> getOneFans(
+            @RequestParam Long id,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size
+    ){
+        try {
+            return Response.success(userService.getOnesFanList(id,page,size),"查找成功");
+        }catch (Exception e){
+            return Response.error(null,e.getMessage()+" 查找失败");
+        }
+    }
+    @GetMapping("/user/getOnesFollows")
+    public Response<?> getOneFollows(
+            @RequestParam Long id,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size){
+        try {
+            return Response.success(userService.getOnesFollowList(id,page,size),"查找成功");
+        }catch (Exception e){
+            return Response.error(null,e.getMessage()+" 查找失败");
+        }
+    }
     @GetMapping("/user/ifIsAdmin")
     public Response<?> ifIsAdmin(){
         try {
             return Response.success(sseService.isAdmin(),"请求成功");
         }catch (Exception e){
-            return Response.error(null,e.getMessage());
+            return Response.error(null,e.getMessage()+" 查找失败");
         }
     }
 

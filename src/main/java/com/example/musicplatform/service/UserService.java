@@ -20,8 +20,8 @@ public interface UserService {
     String login(LoginRequest loginRequest);
     OnesUserDetail getOnesUserDetail(Long id);
     boolean isAdmin(Long id);
-
-
+    Page<UserSimpleDTO> getOnesFollowList(Long id,int page, int pageSize);
+    Page<UserSimpleDTO> getOnesFanList(Long id,int page, int pageSize);
 
 
 

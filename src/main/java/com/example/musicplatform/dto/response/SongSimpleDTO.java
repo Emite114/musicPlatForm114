@@ -2,7 +2,7 @@ package com.example.musicplatform.dto.response;
 
 import com.example.musicplatform.entity.Song;
 import lombok.Data;
-//todo:换成mapper converter
+
 @Data
 public class SongSimpleDTO {
     private Long Id;//converter
@@ -10,5 +10,9 @@ public class SongSimpleDTO {
     private String songArtist;//converter
     private String avatarUrl="/default/defaultSongAvatar.png";//converter
     private Long playCount;//converter
-    private Long favoriteCount;//converter
+    private Long favouriteCount;//converter
+//done
+    private boolean ifIsFavourite;
+    private Long commentCount;
+
 }

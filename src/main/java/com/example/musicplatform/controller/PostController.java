@@ -58,13 +58,28 @@ public class PostController {
     public Response<?> getFavouritePostUserOwn(
             @RequestParam(required = false) String keyword,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20")int size
+            @RequestParam(defaultValue = "20")int size,
+            @RequestParam(defaultValue = "time")String sort
     ){
         try {
-            return Response.success(postService.getUserOwnFavouritePosts(keyword, page, size),"操作成功");
+            return Response.success(postService.getUserOwnFavouritePosts(keyword, page, size,sort),"操作成功");
         } catch (Exception e) {
             return Response.error(null,e.getMessage()+"操作失败");
         }
     }
 
+    @GetMapping("/post/getOnesFavouritePosts")
+    public Response<?> getOneFavouritePost(
+            @RequestParam Long id,
+            @RequestParam(required = false) String keyword,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20")int size,
+            @RequestParam(defaultValue = "time")String sort
+    ){
+        try {
+            return Response.success(postService.getOnesFavouritePosts(id,keyword,page,size,sort),"操作成功");
+        }catch (Exception e) {
+            return Response.error(null,e.getMessage()+" 操作失败");
+        }
+    }
 }

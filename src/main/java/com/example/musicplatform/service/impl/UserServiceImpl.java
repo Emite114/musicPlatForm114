@@ -149,7 +149,10 @@ public class UserServiceImpl implements UserService {
         Long userId = SecurityUtils.getCurrentUserId();
         Optional<User> Op = userRepository.findById(userId);
         User user = Op.orElseThrow(()-> new RuntimeException("未找到用户,jwt已过期"));
-        return new UserDetailsResponse(user);
+        UserDetailsResponse udr = new UserDetailsResponse(user);
+        udr.setFanCount(user.getFanCount());
+        udr.setFollowCount(user.getFollowCount());
+        return udr;
     }
 
     //模糊查询用户
@@ -202,7 +205,8 @@ public class UserServiceImpl implements UserService {
             UserSimpleDTO dto = userConverter.userToUserSimpleDTO(user);
             dto.setId(user.getId());
             dto.setPostCount(postRepository.countByUserId(user.getId()));
-            dto.setIfIsFollowed(true);
+            dto.setIfIsFollowed(followRepository.findByUserIdAndFollowUserId(SecurityUtils.getCurrentUserId(), user.getId()).isPresent());
+            dto.setIfIsMyFan(followRepository.findByUserIdAndFollowUserId(user.getId(), SecurityUtils.getCurrentUserId()).isPresent());
             if (user.getAvatarUrl()!=null) {
                 dto.setAvatarUrl(user.getAvatarUrl());
             }
@@ -219,6 +223,7 @@ public class UserServiceImpl implements UserService {
         return UserPageTODTO(userPage);
     }
 
+
     @Override
     public Page<UserSimpleDTO> getOwnFanList(int page, int pageSize) {
         Pageable pageable = PageRequest.of(page, pageSize);
@@ -231,6 +236,9 @@ public class UserServiceImpl implements UserService {
     public OnesUserDetail getOnesUserDetail(Long id) {
         User user = userRepository.findById(id).orElseThrow(()->new RuntimeException("找不到用户"));
         OnesUserDetail detail = userConverter.userToOnesUserDetail(user);
+        detail.setUserName(user.getUsername());
+        detail.setIfIsFollowed(followRepository.findByUserIdAndFollowUserId(SecurityUtils.getCurrentUserId(), id).isPresent());
+        detail.setIfIsMyFan(followRepository.findByUserIdAndFollowUserId(id,SecurityUtils.getCurrentUserId()).isPresent());
         if (user.getAvatarUrl()!=null) {
             detail.setAvatarUrl(user.getAvatarUrl());
         }
@@ -239,6 +247,9 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public boolean isAdmin(Long id) {
+        if(userRepository.findById(id).isEmpty()){
+            throw new RuntimeException("该用户不存在");
+        }
         List<UserRole> userRole = userRoleRepository.findByUserId(id);
         for (UserRole ur : userRole) {
             if (ur.getRoleId().equals(2L)) {
@@ -246,5 +257,25 @@ public class UserServiceImpl implements UserService {
             }
         }
         return false;
+    }
+
+    @Override
+    public Page<UserSimpleDTO> getOnesFollowList(Long id, int page, int pageSize) {
+        if(userRepository.findById(id).isEmpty()){
+            throw new RuntimeException("该用户不存在");
+        }
+        Pageable pageable = PageRequest.of(page, pageSize);
+        Page<User> userPage = userRepository.findFollows(id, pageable);
+        return UserPageTODTO(userPage);
+    }
+
+    @Override
+    public Page<UserSimpleDTO> getOnesFanList(Long id, int page, int pageSize) {
+        if(userRepository.findById(id).isEmpty()){
+            throw new RuntimeException("该用户不存在");
+        }
+        Pageable pageable = PageRequest.of(page, pageSize);
+        Page<User> userPage = userRepository.findFans(id, pageable);
+        return UserPageTODTO(userPage);
     }
 }

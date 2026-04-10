@@ -15,4 +15,6 @@ public class SongCommentResponse {
     private String userAvatar="/default/defaultUserAvatar.png";
     private String createTime;//converter
     private Long countOfChildren;
+    //done
+    private boolean ifIsLiked;
 }

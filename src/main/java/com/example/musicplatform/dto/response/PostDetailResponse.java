@@ -16,12 +16,18 @@ public class PostDetailResponse {
     private Long id;
     private LocalDateTime createdDate;
     private LocalDateTime updatedDate;
-    private String userAvatarUrl;
+    private String userAvatarUrl="/default/defaultSongAvatar.png";
     private List<String> mediaUrlList;
     private Long likeCount;
+    private Long favouriteCount;
     private Long commentCount;
     private Long viewCount;
+    //done
     private boolean ifIsFollowed;
+    private boolean ifIsMyFan;
+    private boolean ifIsLiked;
+    private boolean ifIsFavourite;
+
 
     public PostDetailResponse(Post post) {
         this.userId = post.getUserId();

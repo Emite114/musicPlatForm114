@@ -10,4 +10,5 @@ public class UserSimpleDTO {
     private int postCount;
     private Long fanCount;
     private boolean ifIsFollowed;
+    private boolean ifIsMyFan;
 }

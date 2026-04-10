@@ -56,6 +56,9 @@ public class PostServiceImpl implements PostService {
             dto.setContent(post.getContent());
             dto.setLikeCount(post.getLikeCount());
             dto.setUserId(post.getUserId());
+            dto.setViewCount(post.getViewCount());
+            dto.setIfIsFavourite(userFavouritePostRepository.findByPostIdAndUserId(post.getId(),SecurityUtils.getCurrentUserId()).isPresent());
+            dto.setIfIsLiked(userLikePostRepository.findByPostIdAndUserId(post.getId(), SecurityUtils.getCurrentUserId()).isPresent());
             dto.setUsername(
                     userRepository.findById(post.getUserId())
                     .map(User::getUsername)
@@ -116,8 +119,12 @@ public class PostServiceImpl implements PostService {
         }
         PostDetailResponse postDetailResponse = new PostDetailResponse(post);
         postDetailResponse.setViewCount(post.getViewCount());
+        postDetailResponse.setLikeCount(post.getLikeCount());
+        postDetailResponse.setCommentCount(post.getCommentCount());
+        postDetailResponse.setFavouriteCount(post.getFavouriteCount());
+        postDetailResponse.setIfIsLiked(userLikePostRepository.findByPostIdAndUserId(post.getId(), SecurityUtils.getCurrentUserId()).isPresent());
+        postDetailResponse.setIfIsFavourite(userFavouritePostRepository.findByPostIdAndUserId(post.getId(), SecurityUtils.getCurrentUserId()).isPresent());
         Long currentUserId = SecurityUtils.getCurrentUserId();
-        postDetailResponse.setIfIsFollowed(followRepository.findByUserIdAndFollowUserId(currentUserId, post.getUserId()).isPresent());
         Optional<User> optionalUser = userRepository.findById(post.getUserId());
         User user = optionalUser.orElse(null);
         if (user == null) {
@@ -125,7 +132,13 @@ public class PostServiceImpl implements PostService {
             user.setUsername("已注销用户");
         }
         postDetailResponse.setUsername(user.getUsername());
+        if(user.getAvatarUrl()!=null){
         postDetailResponse.setUserAvatarUrl(user.getAvatarUrl());
+        }
+        postDetailResponse.setUserId(post.getUserId());
+        postDetailResponse.setIfIsFollowed(followRepository.findByUserIdAndFollowUserId(currentUserId, user.getId()).isPresent());
+        postDetailResponse.setIfIsMyFan(followRepository.findByUserIdAndFollowUserId(currentUserId, user.getId()).isPresent());
+
         List<PostMedia> postMediaList = postMediaRepository.findAllByPostId(post.getId());
         if (postMediaList == null) {
             postDetailResponse.setMediaUrlList(null);
@@ -226,7 +239,7 @@ public class PostServiceImpl implements PostService {
         if(postRepository.findById(postId).isEmpty()) {
             throw new RuntimeException("找不到该文章");
         }
-        //找不到->点赞
+        //找不到->收藏
         if(userFavouritePostRepository.findByPostIdAndUserId(postId,userId).isEmpty()){
             UserFavouritePost userFavouritePost = new UserFavouritePost();
             userFavouritePost.setPostId(postId);
@@ -259,15 +272,22 @@ public class PostServiceImpl implements PostService {
         }
         throw new RuntimeException("意外的错误");
     }
-    public Page<PostSimpleDTO> getUserOwnFavouritePosts(String keyword, int page, int size) {
+    public Page<PostSimpleDTO> getUserOwnFavouritePosts(String keyword, int page, int size,String sort) {
         if (keyword == null || keyword.trim().isEmpty()) {
             keyword = "";
         }
-        Pageable pageable = PageRequest.of(page, size);
+        Pageable pageable = PageableUtil.initializePageable(page,size,sort);
         Long userId = SecurityUtils.getCurrentUserId();
-
 
         Page<Post> pagePost = userFavouritePostRepository.searchUserFavouritePostByKeyword(userId, keyword, pageable);
         return entityPageToDTOPage(pagePost);
+    }
+    public Page<PostSimpleDTO> getOnesFavouritePosts(Long id,String keyword, int page, int size,String sort) {
+        if (keyword == null || keyword.trim().isEmpty()) {
+            keyword = "";
+        }
+        Pageable pageable = PageableUtil.initializePageable(page,size,sort);
+        Page<Post> postPage = userFavouritePostRepository.searchUserFavouritePostByKeyword(id,keyword, pageable);
+        return entityPageToDTOPage(postPage);
     }
 }

@@ -64,13 +64,27 @@ public class SongController {
     public Response<?> getFavouriteUserOwn(
             @RequestParam(required = false) String keyword,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "time") String sort
     ){
         try {
-            return Response.success(songService.getUserOwnFavouriteSongs(keyword,page,size),"操作成功");
+            return Response.success(songService.getUserOwnFavouriteSongs(keyword,page,size,sort),"操作成功");
         }catch (Exception e){
             return Response.error(null,e.getMessage()+"操作失败");
         }
     }
-
+    @GetMapping("/song/getOnesFavouriteSongs")
+    public Response<?> getOneFavouriteSongs(
+            @RequestParam Long id,
+            @RequestParam(required = false) String keyword,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "time") String sort
+    ){
+        try {
+            return Response.success(songService.getOnesFavouriteSongList(id,keyword,page,size,sort),"操作成功");
+        }catch (Exception e){
+            return Response.error(null,e.getMessage()+"操作失败");
+        }
+    }
 }

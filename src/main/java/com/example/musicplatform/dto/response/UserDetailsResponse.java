@@ -11,6 +11,8 @@ public class UserDetailsResponse {
     private String avatarUrl="/default/defaultUserAvatar.png";
     private User.GenderEnum gender;
     private LocalDateTime registerDate;
+    private Long followCount;
+    private Long fanCount;
     public UserDetailsResponse(User user) {
         this.UserId = user.getId();
         this.username = user.getUsername();

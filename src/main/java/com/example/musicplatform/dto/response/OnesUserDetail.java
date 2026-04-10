@@ -11,4 +11,7 @@ public class OnesUserDetail {
     private Long followCount;
     private Long fanCount;
     private User.GenderEnum gender;
+    //todo
+    private boolean ifIsFollowed;
+    private boolean ifIsMyFan;
 }

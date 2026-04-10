@@ -45,6 +45,9 @@ public class SongServiceImpl implements SongService {
             if (song.getAvatarUrl() != null) {
                 dto.setAvatarUrl(song.getAvatarUrl());
             }
+            dto.setIfIsFavourite(userFavouriteSongRepository.findBySongIdAndUserId(song.getId(),SecurityUtils.getCurrentUserId()).isPresent());
+            dto.setCommentCount(song.getCommentCount());
+            dto.setFavouriteCount(song.getFavouriteCount());
             return dto;
         });
     }
@@ -104,6 +107,9 @@ public class SongServiceImpl implements SongService {
         if(song.getAvatarUrl()!=null){
             details.setAvatarUrl(song.getAvatarUrl());
         }
+        details.setCommentCount(song.getCommentCount());
+        details.setFavoriteCount(song.getFavouriteCount());
+        details.setIfIsFavorite(userFavouriteSongRepository.findBySongIdAndUserId(song.getId(),SecurityUtils.getCurrentUserId()).isPresent());
         if(redisConnectionChecker.isRedisConnected()){
             songStatsService.increaseSongPlayCount(song.getId());
             details.setPlayCount(details.getPlayCount()+1);
@@ -169,14 +175,22 @@ public class SongServiceImpl implements SongService {
     }
 
     @Override
-    public Page<SongSimpleDTO> getUserOwnFavouriteSongs(String keyword, int page, int size) {
+    public Page<SongSimpleDTO> getUserOwnFavouriteSongs(String keyword, int page, int size,String sort) {
         if (keyword == null || keyword.trim().isEmpty()) {
             keyword = "";
         }
-        Pageable pageable = PageRequest.of(page, size);
+        Pageable pageable = PageableUtil.initializeSongPageable(page, size,sort);
         Long userId = SecurityUtils.getCurrentUserId();
         Page<Song> pageSong = userFavouriteSongRepository.searchUserFavouriteSongByKeyword(userId, keyword, pageable);
         return entityPageToDTOPage(pageSong);
     }
-
+    @Override
+    public Page<SongSimpleDTO> getOnesFavouriteSongList(Long id,String keyword, int page, int size,String sort) {
+        if (keyword == null || keyword.trim().isEmpty()) {
+            keyword = "";
+        }
+        Pageable pageable = PageableUtil.initializeSongPageable(page, size,sort);
+        Page<Song> pageSong = userFavouriteSongRepository.searchUserFavouriteSongByKeyword(id,keyword, pageable);
+        return entityPageToDTOPage(pageSong);
+    }
 }

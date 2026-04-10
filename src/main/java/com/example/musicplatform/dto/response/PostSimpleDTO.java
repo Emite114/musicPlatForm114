@@ -10,5 +10,9 @@ public class PostSimpleDTO {
     private String title;
     private String content;
     private String coverUrl="/default/defaultSongAvatar.png";
+    private Long viewCount;
     private Long likeCount;
+    private boolean ifIsLiked;
+    private boolean ifIsFavourite;
+
 }

@@ -43,4 +43,9 @@ public interface UserRepository extends JpaRepository<User,Long> {
     @Query("SELECT u FROM User u WHERE u.id IN" + "(SELECT f.userId FROM Follow f WHERE f.followUserId = :userId)" )
     Page<User> findFans(@Param("userId") Long userId, Pageable pageable);
 
+//    @Query("SELECT COUNT(u) FROM User u WHERE u.id IN (SELECT f.userId FROM Follow f WHERE f.followUserId = :userId)")
+//    Long countFans(@Param("userId") Long userId);
+//
+//    @Query("SELECT COUNT(u) FROM User u WHERE u.id IN (SELECT f.followUserId FROM Follow f WHERE f.userId = :userId)")
+//    Long countFollows(@Param("userId") Long userId);
 }

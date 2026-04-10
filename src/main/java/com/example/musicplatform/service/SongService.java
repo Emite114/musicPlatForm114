@@ -14,6 +14,7 @@ public interface SongService {
     SongDetailsResponse getSongDetails(@Param("id") Long id);
     Page<SongSimpleDTO> page(String keyword, int page, int pageSize,String sort);
     boolean toggleFavourite(Long songId);
-    Page<SongSimpleDTO> getUserOwnFavouriteSongs(String keyword, int page, int size);
+    Page<SongSimpleDTO> getUserOwnFavouriteSongs(String keyword, int page, int size,String sort);
+    Page<SongSimpleDTO> getOnesFavouriteSongList(Long id,String keyword, int page, int size,String sort);
 
 }

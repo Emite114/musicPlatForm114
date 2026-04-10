@@ -13,4 +13,9 @@ public class SongDetailsResponse {
     private String lrcUrl;
     private String avatarUrl="/default/defaultSongAvatar.png";
     private Long playCount;
+    //done
+    private Long commentCount;
+    private Long favoriteCount;
+    private boolean ifIsFavorite;
+
 }

@@ -13,5 +13,6 @@ public interface PostService {
     Page<PostSimpleDTO> getUserPosts(Long id, int page, int size);
     boolean toggleLike(Long postId);
     boolean toggleFavourite(Long postId);
-    Page<PostSimpleDTO> getUserOwnFavouritePosts(String keyword, int page, int size);
+    Page<PostSimpleDTO> getUserOwnFavouritePosts(String keyword, int page, int size,String sort);
+    Page<PostSimpleDTO> getOnesFavouritePosts(Long id,String keyword, int page, int size,String sort);
 }

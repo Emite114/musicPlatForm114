@@ -16,6 +16,8 @@ public class PostCommentResponse {
     private String createTime;//converter
     private Long countOfChildren;
 
+    private boolean ifIsLiked;
+
 
 
 }
