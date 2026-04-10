@@ -9,6 +9,7 @@ public class PostSimpleDTO {
     private String username;
     private String title;
     private String content;
+    private String userAvatar="/default/defaultUserAvatar.png";
     private String coverUrl="/default/defaultSongAvatar.png";
     private Long viewCount;
     private Long likeCount;

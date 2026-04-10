@@ -130,7 +130,7 @@ public class PostCommentServiceImpl implements PostCommentService {
         Page<PostComment> postComments = postCommentRepository.findByPostIdAndParentIdAndIsDelete(postId,0L,pageable,false);
         return postComments.map(postComment -> {
             PostCommentResponse cmp = postCommentConverter.toDTO(postComment);
-            cmp.setUserName(userRepository.findById(postComment.getUserId()).orElseThrow(()->new RuntimeException("意料之外的错误,找不到用户")).getUsername());
+            cmp.setUsername(userRepository.findById(postComment.getUserId()).orElseThrow(()->new RuntimeException("意料之外的错误,找不到用户")).getUsername());
             cmp.setCountOfChildren(postCommentRepository.countByParentIdAndIsDelete(cmp.getId(),false));
             cmp.setIfIsLiked(userLikePostCommentRepository.findByPostCommentIdAndUserId(postComment.getId(), SecurityUtils.getCurrentUserId()).isPresent());
             userRepository.findById(postComment.getUserId()).ifPresent(user -> {
@@ -157,7 +157,7 @@ public class PostCommentServiceImpl implements PostCommentService {
                 if(user.getAvatarUrl() != null) {
                 cmp.setUserAvatar(user.getAvatarUrl());
                 }
-                cmp.setUserName(user.getUsername());
+                cmp.setUsername(user.getUsername());
             });
             return cmp;
         });

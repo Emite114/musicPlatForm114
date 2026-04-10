@@ -16,7 +16,7 @@ public class PostDetailResponse {
     private Long id;
     private LocalDateTime createdDate;
     private LocalDateTime updatedDate;
-    private String userAvatarUrl="/default/defaultSongAvatar.png";
+    private String userAvatarUrl="/default/defaultUserAvatar.png";
     private List<String> mediaUrlList;
     private Long likeCount;
     private Long favouriteCount;

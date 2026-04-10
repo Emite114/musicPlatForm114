@@ -162,7 +162,7 @@ public class MessageServiceImpl implements MessageService {
                 clr.setTalkingToUserAvatar(talkingTouser.getAvatarUrl());
             }
             if(currentUser.getAvatarUrl()!=null){
-                clr.setOwnAvatar(currentUser.getAvatarUrl());
+                clr.setUserAvatar(currentUser.getAvatarUrl());
             }
             clr.setLastMessageSenderName(userRepository.findById(clr.getLastMessageSenderId()).orElseThrow(()->new RuntimeException("意外的错误")).getUsername());
             return clr;

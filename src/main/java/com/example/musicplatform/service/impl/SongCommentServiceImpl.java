@@ -112,7 +112,7 @@ public class SongCommentServiceImpl implements SongCommentService {
                 if (user.getAvatarUrl() != null) {
                 sc.setUserAvatar(user.getAvatarUrl());
                 }
-                sc.setUserName(user.getUsername());
+                sc.setUsername(user.getUsername());
             });
             return sc;
         });
@@ -133,7 +133,7 @@ public class SongCommentServiceImpl implements SongCommentService {
                 if (user.getAvatarUrl() != null) {
                     cmp.setUserAvatar(user.getAvatarUrl());
                 }
-                    cmp.setUserName(user.getUsername());
+                    cmp.setUsername(user.getUsername());
             });
             return cmp;
         });

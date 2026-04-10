@@ -51,6 +51,7 @@ public class PostServiceImpl implements PostService {
     protected Page<PostSimpleDTO> entityPageToDTOPage(Page<Post> postPage) {
         return postPage.map(post -> {
             PostSimpleDTO dto = new PostSimpleDTO();
+            User user = userRepository.findById(post.getUserId()).orElseThrow(()->new RuntimeException("找不发帖到用户"));
             dto.setId(post.getId());
             dto.setTitle(post.getTitle());
             dto.setContent(post.getContent());
@@ -59,12 +60,10 @@ public class PostServiceImpl implements PostService {
             dto.setViewCount(post.getViewCount());
             dto.setIfIsFavourite(userFavouritePostRepository.findByPostIdAndUserId(post.getId(),SecurityUtils.getCurrentUserId()).isPresent());
             dto.setIfIsLiked(userLikePostRepository.findByPostIdAndUserId(post.getId(), SecurityUtils.getCurrentUserId()).isPresent());
-            dto.setUsername(
-                    userRepository.findById(post.getUserId())
-                    .map(User::getUsername)
-                    .orElse("未知用户")
-            );
-
+            dto.setUsername(user.getUsername());
+            if(user.getAvatarUrl()!=null) {
+                dto.setUserAvatar(user.getAvatarUrl());
+            }
             List<PostMedia> relations = postMediaRepository.findAllByPostId(post.getId());
             for (PostMedia pm : relations) {
                 Media media = mediaRepository.findById(pm.getMediaId()).orElse(null);
@@ -73,7 +72,6 @@ public class PostServiceImpl implements PostService {
                     break;
                 }
             }
-
             return dto;
         });
     }
