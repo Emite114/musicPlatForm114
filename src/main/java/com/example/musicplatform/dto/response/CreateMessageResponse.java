@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 @Data
 public class CreateMessageResponse {
     //消息信息
-    private Long Id;
+    private Long id;
     private Long conversationId;
     private Long speakingUserId;
     private Long receiveUserId;

@@ -12,5 +12,5 @@ public interface MessageRepository extends JpaRepository<Message, Long> {
 //    List<Message> findBySpeakingUserIdAndReceiveUserId(Long speakingUserId, Long receiveUserId);
     boolean existsBySpeakingUserIdAndReceiveUserId(Long speakingUserId, Long receiveUserId);
 
-    Page<Message> findByConversationIdOrderByCreateDate(Long conversationId, Pageable pageable);
+    Page<Message> findByConversationIdOrderByCreateTime(Long conversationId, Pageable pageable);
 }

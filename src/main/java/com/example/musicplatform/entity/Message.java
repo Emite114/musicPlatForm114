@@ -25,6 +25,6 @@ public class Message {
     @Column(name="conversation_id")
     private Long conversationId;
 
-    @Column(name = "create_date")
-    private LocalDateTime createDate;
+    @Column(name = "create_time")
+    private LocalDateTime createTime;
 }

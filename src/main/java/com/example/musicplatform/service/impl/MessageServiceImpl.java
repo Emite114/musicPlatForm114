@@ -73,7 +73,7 @@ public class MessageServiceImpl implements MessageService {
 
         Message message = messageConverter.requestToEntity(request);
         message.setSpeakingUserId(SecurityUtils.getCurrentUserId());
-        message.setCreateDate(now);
+        message.setCreateTime(now);
 
         Conversation conversation = getOrCreateConversation(message.getSpeakingUserId(), message.getReceiveUserId());
         message.setConversationId(conversation.getId());
@@ -173,7 +173,7 @@ public class MessageServiceImpl implements MessageService {
     @Override
     public Page<MessageResponse> getMessages(Long conversationId, int page, int size) {
         Pageable pageable = PageRequest.of(page,size);
-        return messageRepository.findByConversationIdOrderByCreateDate(conversationId,pageable).map(message -> {
+        return messageRepository.findByConversationIdOrderByCreateTime(conversationId,pageable).map(message -> {
             MessageResponse mr = messageConverter.entityToMessageResponse(message);
             Long currentUserId = SecurityUtils.getCurrentUserId();
             Conversation conversation = conversationRepository.findById(conversationId).orElseThrow(()->new RuntimeException("意外的错误,找不到对话"));
