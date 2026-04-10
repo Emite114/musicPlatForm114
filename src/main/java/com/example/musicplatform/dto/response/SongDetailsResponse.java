@@ -8,6 +8,7 @@ import java.time.LocalDateTime;
 @Data
 public class SongDetailsResponse {
     private Long id;
+    private String songName;
     private String songArtist;
     private String audioUrl;
     private String lrcUrl;

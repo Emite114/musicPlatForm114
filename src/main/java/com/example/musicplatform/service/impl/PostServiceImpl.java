@@ -281,6 +281,9 @@ public class PostServiceImpl implements PostService {
         return entityPageToDTOPage(pagePost);
     }
     public Page<PostSimpleDTO> getOnesFavouritePosts(Long id,String keyword, int page, int size,String sort) {
+        if(userRepository.findById(id).isEmpty()){
+            throw new IllegalArgumentException("用户不存在");
+        }
         if (keyword == null || keyword.trim().isEmpty()) {
             keyword = "";
         }

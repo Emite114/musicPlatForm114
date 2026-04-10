@@ -37,7 +37,8 @@ public class SongServiceImpl implements SongService {
     private RedisConnectionChecker redisConnectionChecker;
     @Autowired
     private SongStatsService songStatsService;
-
+    @Autowired
+    private UserRepository userRepository;
 
     protected Page<SongSimpleDTO> entityPageToDTOPage(Page<Song> songPage) {
         return songPage.map(song -> {
@@ -110,6 +111,7 @@ public class SongServiceImpl implements SongService {
         if(song.getAvatarUrl()!=null){
             details.setAvatarUrl(song.getAvatarUrl());
         }
+        details.setSongName(song.getSongName());
         details.setCommentCount(song.getCommentCount());
         details.setFavouriteCount(song.getFavouriteCount());
         details.setIfIsFavourite(userFavouriteSongRepository.findBySongIdAndUserId(song.getId(),SecurityUtils.getCurrentUserId()).isPresent());
@@ -189,6 +191,9 @@ public class SongServiceImpl implements SongService {
     }
     @Override
     public Page<SongSimpleDTO> getOnesFavouriteSongList(Long id,String keyword, int page, int size,String sort) {
+        if(userRepository.findById(id).isEmpty()){
+            throw new IllegalArgumentException("用户不存在");
+        }
         if (keyword == null || keyword.trim().isEmpty()) {
             keyword = "";
         }

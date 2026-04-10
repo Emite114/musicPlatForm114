@@ -11,6 +11,6 @@ public class MessageResponse {
     private Long speakingUserId;
     private Long receiveUserId;
     private Long conversationId;
-    private LocalDateTime createDate;
+    private LocalDateTime createTime;
 
 }

@@ -177,11 +177,14 @@ public class MessageServiceImpl implements MessageService {
             MessageResponse mr = messageConverter.entityToMessageResponse(message);
             Long currentUserId = SecurityUtils.getCurrentUserId();
             Conversation conversation = conversationRepository.findById(conversationId).orElseThrow(()->new RuntimeException("意外的错误,找不到对话"));
-            if(conversation.getUser1Id().equals(SecurityUtils.getCurrentUserId())){
+            if(conversation.getUser1Id().equals(currentUserId)){
                 conversation.setUnreadCount1(0L);
             }
-            if(conversation.getUser2Id().equals(SecurityUtils.getCurrentUserId())){
+            if(conversation.getUser2Id().equals(currentUserId)){
                 conversation.setUnreadCount2(0L);
+            }
+            if(!conversation.getUser1Id().equals(currentUserId)&&!conversation.getUser2Id().equals(currentUserId)){
+                throw new RuntimeException("当前用户不属于该会话");
             }
             conversationRepository.save(conversation);
             return mr;
