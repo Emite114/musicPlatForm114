@@ -117,10 +117,13 @@ public class SongServiceImpl implements SongService {
         details.setFavouriteCount(song.getFavouriteCount());
         details.setSharedByUserId(song.getUploadBy());
         User user = userRepository.findById(song.getUploadBy()).orElse(null);
-        if(user!=null&&user.getUsername()==null){
+        if(user == null){
             details.setSharedByUsername("已注销用户");
         }
-        if (user != null) {
+        if (user != null && user.getUsername() == null) {
+            details.setSharedByUsername("已注销用户");
+        }
+        if (user != null&&user.getUsername()!=null) {
             details.setSharedByUsername(user.getUsername());
         }
         details.setIfIsFavourite(userFavouriteSongRepository.findBySongIdAndUserId(song.getId(),SecurityUtils.getCurrentUserId()).isPresent());
