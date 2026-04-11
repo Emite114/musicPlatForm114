@@ -176,6 +176,7 @@ public class MessageServiceImpl implements MessageService {
         return messageRepository.findByConversationIdOrderByCreateTime(conversationId,pageable).map(message -> {
             MessageResponse mr = messageConverter.entityToMessageResponse(message);
             Long currentUserId = SecurityUtils.getCurrentUserId();
+            mr.setCreateTime(message.getCreateTime());
             Conversation conversation = conversationRepository.findById(conversationId).orElseThrow(()->new RuntimeException("意外的错误,找不到对话"));
             if(conversation.getUser1Id().equals(currentUserId)){
                 conversation.setUnreadCount1(0L);

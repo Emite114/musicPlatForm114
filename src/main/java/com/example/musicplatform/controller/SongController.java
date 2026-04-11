@@ -87,4 +87,32 @@ public class SongController {
             return Response.error(null,e.getMessage()+"操作失败");
         }
     }
+    @GetMapping("/song/getOnesFavouriteSongIdList")
+    public Response<?> getOnesFavouriteSongIdList(
+            @RequestParam(required = false) Long id,//为空会被赋值成当前用户
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "500") int size,
+            @RequestParam(defaultValue = "time") String sort
+            ){
+        try {
+            return  Response.success(songService.getOnesFavouriteSongIdList(id,page,size,sort),"查找成功");
+        }
+        catch (Exception e){
+            return Response.error(null,e.getMessage()+" 查找失败");
+        }
+    }
+    @GetMapping("/song/getOnesSharedSongList")
+    public Response<?> getOnesSharedSongList(
+            @RequestParam(required = false) Long id,
+            @RequestParam(required = false) String keyword,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "time") String sort
+    ){
+        try {
+            return Response.success(songService.getOnesSharedSongList(id,keyword,page,size,sort),"查找成功");
+        }catch (Exception e){
+            return Response.error(null,e.getMessage()+"查找失败");
+        }
+    }
 }

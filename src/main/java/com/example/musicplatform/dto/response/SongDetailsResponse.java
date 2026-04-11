@@ -19,4 +19,7 @@ public class SongDetailsResponse {
     private Long favouriteCount;
     private boolean ifIsFavourite;
 
+    private Long sharedByUserId;
+    private String sharedByUsername;
+
 }

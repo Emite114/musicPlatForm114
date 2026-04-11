@@ -23,6 +23,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -114,6 +115,14 @@ public class SongServiceImpl implements SongService {
         details.setSongName(song.getSongName());
         details.setCommentCount(song.getCommentCount());
         details.setFavouriteCount(song.getFavouriteCount());
+        details.setSharedByUserId(song.getUploadBy());
+        User user = userRepository.findById(song.getUploadBy()).orElse(null);
+        if(user!=null&&user.getUsername()==null){
+            details.setSharedByUsername("已注销用户");
+        }
+        if (user != null) {
+            details.setSharedByUsername(user.getUsername());
+        }
         details.setIfIsFavourite(userFavouriteSongRepository.findBySongIdAndUserId(song.getId(),SecurityUtils.getCurrentUserId()).isPresent());
         if(redisConnectionChecker.isRedisConnected()){
             songStatsService.increaseSongPlayCount(song.getId());
@@ -201,4 +210,35 @@ public class SongServiceImpl implements SongService {
         Page<Song> pageSong = userFavouriteSongRepository.searchUserFavouriteSongByKeyword(id,keyword, pageable);
         return entityPageToDTOPage(pageSong);
     }
+
+    @Override
+    public Page<SongSimpleDTO> getOnesSharedSongList(Long id, String keyword, int page, int size, String sort) {
+        if(id == null){
+            id = SecurityUtils.getCurrentUserId();
+        }
+        if(userRepository.findById(id).isEmpty()){
+            throw new IllegalArgumentException("用户不存在");
+        }
+        if (keyword == null || keyword.trim().isEmpty()) {
+            keyword = "";
+        }
+        Pageable pageable = PageableUtil.initializeSongPageable(page, size,sort);
+        Page<Song> songPage = songRepository.searchUserSharedSongs(id, keyword, pageable);
+        return entityPageToDTOPage(songPage);
+    }
+
+    @Override
+    public List<Long> getOnesFavouriteSongIdList(Long id,int page,int size,String sort) {
+        if(id == null){
+            id = SecurityUtils.getCurrentUserId();
+        }
+        if (userRepository.findById(id).isEmpty()) {
+            throw new RuntimeException("找不到该用户");
+        }
+
+        Pageable pageable = PageableUtil.initializeSongPageable(page, size,sort);
+        Page<Long> songIdPage = userFavouriteSongRepository.searchUserFavouriteSongId(id,pageable);
+        return  songIdPage.getContent();
+    }
+
 }

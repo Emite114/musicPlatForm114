@@ -17,15 +17,25 @@ public interface SongRepository extends JpaRepository<Song, Long> {
 //    void incrementPlayCount(@Param("id") Long id);
 
     //todo sql语法
-    @Query("""
-    SELECT s FROM Song s
-    WHERE (:keyword IS NULL OR 
-           s.songName LIKE %:keyword% OR 
-           s.songArtist LIKE %:keyword% AND 
-           s.isDelete = false)
-    ORDER BY s.createTime DESC
-""")
+    /**
+     * 全局搜索歌曲（支持 keyword 为空）
+     */
+    @Query("SELECT s FROM Song s WHERE (:keyword IS NULL OR " +
+            "s.songName LIKE %:keyword% OR " +
+            "s.songArtist LIKE %:keyword%) " +
+            "AND s.isDelete = false")
     Page<Song> search(@Param("keyword") String keyword, Pageable pageable);
+
+    /**
+     * 搜索用户上传的歌曲（修复版）
+     */
+    @Query("SELECT s FROM Song s WHERE s.uploadBy = :userId " +
+            "AND (:keyword IS NULL OR s.songName LIKE %:keyword% OR s.songArtist LIKE %:keyword%) " +
+            "AND s.isDelete = false")
+    Page<Song> searchUserSharedSongs(
+            @Param("userId") Long userId,
+            @Param("keyword") String keyword,
+            Pageable pageable);
 
     @Transactional
     @Modifying
