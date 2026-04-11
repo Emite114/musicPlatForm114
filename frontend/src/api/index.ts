@@ -1,0 +1,6 @@
+export { authApi } from '@/api/auth'
+export { userApi } from '@/api/user'
+export { songApi } from '@/api/song'
+export { postApi } from '@/api/post'
+export { messageApi } from '@/api/message'
+export { reportApi } from '@/api/report'
