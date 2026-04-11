@@ -1,4 +1,4 @@
-<script setup lang="ts">
+﻿<script setup lang="ts">
 import { computed, nextTick, reactive, ref, watch } from 'vue'
 import { RouterLink, useRoute } from 'vue-router'
 import http from '@/api/http'
@@ -305,7 +305,6 @@ watch(
     <PageHeader
       eyebrow="Song Detail"
       :title="song.songName || '歌曲详情'"
-      :description="song.songArtist || '当前歌曲已返回分享者、收藏状态与评论数据'"
     >
       <template #actions>
         <button
@@ -426,11 +425,7 @@ watch(
   </section>
 
   <section class="panel">
-    <PageHeader
-      eyebrow="Comment"
-      title="歌曲评论"
-      description="支持主评论、子评论、点赞、删除和举报评论。"
-    />
+    <PageHeader eyebrow="Comment" title="歌曲评论" />
 
     <form class="stack" @submit.prevent="submitComment">
       <div v-if="replyState" class="pill">
@@ -690,3 +685,4 @@ watch(
   }
 }
 </style>
+

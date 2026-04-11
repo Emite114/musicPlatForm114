@@ -1,4 +1,4 @@
-<script setup lang="ts">
+﻿<script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import PageHeader from '@/components/PageHeader.vue'
 import PaginationBar from '@/components/PaginationBar.vue'
@@ -27,7 +27,6 @@ onMounted(() => loadReports())
       <PageHeader
         eyebrow="History"
         title="我的举报记录"
-        description="这里仅展示举报进度；发起举报请直接在歌曲、帖子和评论详情页中操作。"
       />
 
       <table class="table-like" v-if="reports?.content.length">
@@ -58,3 +57,4 @@ onMounted(() => loadReports())
       />
   </section>
 </template>
+

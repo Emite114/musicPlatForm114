@@ -1,4 +1,4 @@
-<script setup lang="ts">
+﻿<script setup lang="ts">
 import { reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
@@ -66,19 +66,14 @@ async function submitRegister() {
 <template>
   <div class="auth-layout">
     <section class="auth-copy">
-      <span class="eyebrow">Spring Boot x Vue 3</span>
       <h1>Music Platform</h1>
-      <p>
-        这个前端把你后端里的登录、歌曲、帖子、评论、关注、私信、举报和管理接口都组织成一个统一工作台。
-      </p>
+      <p>登录或注册后即可进入平台。</p>
       <div class="grid-2">
         <div class="metric">
-          <span class="eyebrow">Feature</span>
           <strong>社交化</strong>
           <p>帖子、关注、私信、举报一套串起来。</p>
         </div>
         <div class="metric">
-          <span class="eyebrow">Feature</span>
           <strong>音乐化</strong>
           <p>歌曲上传、试听、收藏、评论集中管理。</p>
         </div>
@@ -123,7 +118,7 @@ async function submitRegister() {
             />
           </div>
           <button class="btn btn-primary" type="submit" :disabled="loading">
-            {{ loading ? '登录中...' : '进入工作台' }}
+            {{ loading ? '登录中...' : '登录' }}
           </button>
         </form>
 
@@ -165,3 +160,4 @@ async function submitRegister() {
     </section>
   </div>
 </template>
+

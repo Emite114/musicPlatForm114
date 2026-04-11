@@ -1,4 +1,4 @@
-<script setup lang="ts">
+﻿<script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { RouterLink } from 'vue-router'
 import MediaUploader from '@/components/MediaUploader.vue'
@@ -82,7 +82,6 @@ onMounted(loadProfileData)
       <PageHeader
         eyebrow="Profile"
         title="我的主页"
-        description="这里保留当前账号的资料编辑和公开主页入口，用户编号只在详情页区域展示。"
       >
         <template #actions>
           <RouterLink class="btn btn-secondary" :to="`/users/${auth.profile.id}`">查看公开主页</RouterLink>
@@ -113,17 +112,14 @@ onMounted(loadProfileData)
 
       <div class="grid-3 profile-metrics">
         <div class="metric">
-          <span class="eyebrow">Following</span>
           <strong>{{ formatCompactNumber(auth.profile.followCount ?? follows?.totalElements ?? 0) }}</strong>
           <p>我的关注</p>
         </div>
         <div class="metric">
-          <span class="eyebrow">Fans</span>
           <strong>{{ formatCompactNumber(auth.profile.fanCount ?? fans?.totalElements ?? 0) }}</strong>
           <p>我的粉丝</p>
         </div>
         <div class="metric">
-          <span class="eyebrow">Posts</span>
           <strong>{{ formatCompactNumber(posts?.totalElements ?? 0) }}</strong>
           <p>已发布帖子</p>
         </div>
@@ -258,3 +254,4 @@ onMounted(loadProfileData)
   }
 }
 </style>
+

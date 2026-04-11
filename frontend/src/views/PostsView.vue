@@ -1,4 +1,4 @@
-<script setup lang="ts">
+﻿<script setup lang="ts">
 import { onMounted, reactive, ref } from 'vue'
 import { RouterLink } from 'vue-router'
 import MediaUploader from '@/components/MediaUploader.vue'
@@ -94,7 +94,6 @@ onMounted(() => {
     <PageHeader
       eyebrow="Collection"
       title="我收藏的帖子"
-      description="这里保留收藏帖子管理，卡片会直接展示作者头像、浏览量、点赞和收藏状态。"
     >
       <template #actions>
         <RouterLink class="btn btn-secondary" to="/search">去搜索中心</RouterLink>
@@ -216,3 +215,4 @@ onMounted(() => {
   }
 }
 </style>
+

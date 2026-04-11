@@ -1,4 +1,4 @@
-<script setup lang="ts">
+﻿<script setup lang="ts">
 import { nextTick, onMounted, reactive, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import MediaUploader from '@/components/MediaUploader.vue'
@@ -117,7 +117,6 @@ onMounted(() => {
     <PageHeader
       eyebrow="Post"
       title="发布帖子"
-      description="上方用于分享帖子，支持标题、正文和图片或视频附件。"
     />
 
     <form class="stack upload-form" @submit.prevent="submitPost">
@@ -157,7 +156,6 @@ onMounted(() => {
     <PageHeader
       eyebrow="Song"
       title="分享歌曲"
-      description="下方用于分享歌曲，可附带歌词和封面。"
     />
 
     <form class="stack upload-form" @submit.prevent="submitSong">
@@ -213,3 +211,4 @@ onMounted(() => {
   justify-content: flex-start;
 }
 </style>
+

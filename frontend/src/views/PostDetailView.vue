@@ -1,4 +1,4 @@
-<script setup lang="ts">
+﻿<script setup lang="ts">
 import { computed, reactive, ref, watch } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 import PageHeader from '@/components/PageHeader.vue'
@@ -319,7 +319,7 @@ watch(
   </section>
 
   <section class="panel">
-    <PageHeader eyebrow="Comment" title="帖子评论" description="支持主评论、子评论、点赞、删除和举报评论。" />
+    <PageHeader eyebrow="Comment" title="帖子评论" />
 
     <form class="stack" @submit.prevent="submitComment">
       <div v-if="replyState" class="pill">
@@ -476,3 +476,4 @@ watch(
   color: var(--muted);
 }
 </style>
+

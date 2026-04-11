@@ -1,4 +1,4 @@
-<script setup lang="ts">
+﻿<script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
 import { RouterView, useRoute, useRouter } from 'vue-router'
 import AppSidebar from '@/components/AppSidebar.vue'
@@ -77,7 +77,6 @@ onMounted(async () => {
     <template v-if="!auth.ready">
       <div class="center-screen">
         <div class="panel panel-soft loading-card">
-          <span class="eyebrow">Booting Console</span>
           <h1>正在连接音乐平台后端</h1>
           <p>先校验登录态，再把工作台内容装载起来。</p>
         </div>
@@ -94,7 +93,6 @@ onMounted(async () => {
       <main class="app-main">
         <header class="topbar">
           <div>
-            <span class="eyebrow">Music Platform</span>
             <h1>{{ route.meta.title ?? route.name }}</h1>
           </div>
 
@@ -148,3 +146,4 @@ onMounted(async () => {
     </div>
   </div>
 </template>
+

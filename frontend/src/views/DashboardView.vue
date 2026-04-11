@@ -1,4 +1,4 @@
-<script setup lang="ts">
+﻿<script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import { RouterLink, useRoute } from 'vue-router'
 import PageHeader from '@/components/PageHeader.vue'
@@ -67,7 +67,6 @@ watch(
     <PageHeader
       eyebrow="Songs"
       title="热门歌曲"
-      description="按热度展示 15 首歌曲，每行展示 5 个。"
     >
       <template #actions>
         <RouterLink class="btn btn-secondary" :to="{ path: '/upload', query: { section: 'song' } }">
@@ -92,7 +91,6 @@ watch(
     <PageHeader
       eyebrow="Posts"
       title="热门帖子"
-      description="按热度展示 15 篇帖子，每行展示 5 个。"
     >
       <template #actions>
         <RouterLink class="btn btn-secondary" :to="{ path: '/upload', query: { section: 'post' } }">
@@ -113,3 +111,4 @@ watch(
     <div v-else class="empty">{{ loadingPosts ? '加载中...' : '暂无热门帖子' }}</div>
   </section>
 </template>
+

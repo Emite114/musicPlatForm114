@@ -1,4 +1,4 @@
-<script setup lang="ts">
+﻿<script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import MediaUploader from '@/components/MediaUploader.vue'
@@ -531,7 +531,6 @@ function followButtonText(user: UserCard) {
   <section class="panel">
     <div class="user-content-toolbar">
       <div>
-        <span class="eyebrow">Space</span>
         <h3 class="content-title">{{ sectionTitle }}</h3>
       </div>
 
@@ -666,7 +665,6 @@ function followButtonText(user: UserCard) {
     <section class="modal-card">
       <div class="modal-header">
         <div>
-          <span class="eyebrow">Edit</span>
           <h3>编辑资料</h3>
         </div>
         <button class="btn btn-ghost" type="button" @click="profileEditorOpen = false">关闭</button>
@@ -1027,3 +1025,4 @@ function followButtonText(user: UserCard) {
   }
 }
 </style>
+

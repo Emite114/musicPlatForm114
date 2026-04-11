@@ -1,4 +1,4 @@
-<script setup lang="ts">
+﻿<script setup lang="ts">
 import { fetchEventSource } from '@microsoft/fetch-event-source'
 import { onBeforeUnmount, onMounted, reactive, ref } from 'vue'
 import PageHeader from '@/components/PageHeader.vue'
@@ -242,7 +242,6 @@ onBeforeUnmount(() => {
       <PageHeader
         eyebrow="Admin"
         title="管理员页面"
-        description="进入页面后会先建立管理员专属连接；管理相关的 403 会统一视为权限不足。"
       >
         <template #actions>
           <span class="pill">
@@ -341,3 +340,4 @@ onBeforeUnmount(() => {
     </div>
   </section>
 </template>
+

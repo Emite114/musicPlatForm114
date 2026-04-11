@@ -1,4 +1,4 @@
-<script setup lang="ts">
+﻿<script setup lang="ts">
 import { onMounted, reactive, ref } from 'vue'
 import { RouterLink } from 'vue-router'
 import MediaUploader from '@/components/MediaUploader.vue'
@@ -103,7 +103,6 @@ onMounted(() => {
     <PageHeader
       eyebrow="Library"
       title="我收藏的歌曲"
-      description="歌曲卡片会直接展示播放量、评论量和收藏状态，和首页热榜保持同一套展示。"
     >
       <template #actions>
         <RouterLink class="btn btn-secondary" to="/search">去搜索中心</RouterLink>
@@ -233,3 +232,4 @@ onMounted(() => {
   }
 }
 </style>
+

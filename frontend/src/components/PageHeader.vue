@@ -1,4 +1,4 @@
-<script setup lang="ts">
+﻿<script setup lang="ts">
 defineProps<{
   eyebrow?: string
   title: string
@@ -9,7 +9,6 @@ defineProps<{
 <template>
   <div class="panel-header">
     <div>
-      <span v-if="eyebrow" class="eyebrow">{{ eyebrow }}</span>
       <h2>{{ title }}</h2>
       <p v-if="description" class="muted">{{ description }}</p>
     </div>
@@ -19,3 +18,4 @@ defineProps<{
     </div>
   </div>
 </template>
+
